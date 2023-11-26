@@ -6,35 +6,73 @@ const String jsonFilePath = "assets/toDoSaveFile.json";
 const JsonDecoder decoder = JsonDecoder();
 List<dynamic> saveFileData = [];
 List<String> colorSchemeChoice = ['Green', 'Red', 'Blue', 'Orange', 'Purple'];
+Map<String, MaterialColor> colorSchemeReference = {'Green': Colors.green, 'Red': Colors.red, 'Blue': Colors.blue, 'Orange': Colors.orange, 'Purple': Colors.purple};
 
-Map<String, dynamic> userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true};
+List<String> programmingLanguagesChoice = ['Real Life', 'Python', 'HTML', 'Java', 'Flutter', 'C++', 'Arduino', 'Kotlin', 'My Website', 'Other'];
 
+Map<String, dynamic> userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false};
+
+String accentColor = userPresets["colorSchemeChoice"]; // TODO make json with app settings and add save color scheme in there
+bool showProgrammingColor = userPresets["showProgrammingColor"];
+bool darkMode = userPresets["darkMode"];
+bool onlySearchInTitle = userPresets["onlySearchInTitle"];
 // TODO maak json map
+
+// test() {
+//   return  Colors.white;
+// }
 
 Future<void> readJson() async {
   final String jsonString = await rootBundle.loadString(jsonFilePath);
   saveFileData = jsonDecode(jsonString);
 }
 
-void main() {
-  runApp(const APPtheme());
+class APPcolorScheme {
+  MaterialColor primary = colorSchemeReference[accentColor]!;
+  dynamic background = darkMode ? Colors.grey[900] : Colors.white;
+  dynamic text = darkMode ? Colors.white : Colors.grey[900];
+  dynamic card = darkMode ? Colors.grey[800] : Colors.white60;
+
+  void setPrimary(newAccentColor) {
+    primary = colorSchemeReference[newAccentColor]!;
+  }
+
+  void switchLightDarkMode() {
+    darkMode = !darkMode;
+    background = darkMode ? Colors.grey[900] : Colors.white;
+    text = darkMode ? Colors.white : Colors.grey[900];
+    card = darkMode ? Colors.grey[800] : Colors.white60;
+  }
 }
 
-class APPtheme extends StatelessWidget {
-  const APPtheme({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "TO DO LIST",
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange, brightness: Brightness.dark, background: Colors.grey[900], primary: Colors.orange, secondary: Colors.orange),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(backgroundColor: Colors.orange),
-        brightness: Brightness.dark,
+class AppLayout {
+  static InputBorder inactiveBorder() {
+    return OutlineInputBorder(
+      borderSide: BorderSide(
+        color: colorScheme.text,
+        width: 2,
       ),
-      home: const APP(),
+      borderRadius: const BorderRadius.all(Radius.circular(10)),
     );
   }
+
+  static InputBorder activeBorder() {
+    return OutlineInputBorder(
+      borderSide: BorderSide(
+        color: colorScheme.primary,
+        width: 4,
+      ),
+      borderRadius: const BorderRadius.all(Radius.circular(10)),
+    );
+  }
+}
+
+APPcolorScheme colorScheme = APPcolorScheme();
+
+void main() {
+  runApp(const MaterialApp(
+    home: APP(),
+  ));
 }
 
 class APP extends StatefulWidget {
@@ -51,15 +89,17 @@ class _APPState extends State<APP> {
     readJson();
   }
 
+  List<String> filterLanguage = [];
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
         length: 2,
         child: Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: colorScheme.background,
           appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: colorScheme.primary,
             title: const Center(
               child: Text("The Project To Do List"),
             ),
@@ -82,13 +122,34 @@ class _APPState extends State<APP> {
           // main body
           body: TabBarView(
             children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: TextField(
+                  cursorColor: colorScheme.primary,
+                  decoration: InputDecoration(
+
+                      /// when inactive
+                      enabledBorder: AppLayout.inactiveBorder(),
+
+                      /// when active
+                      focusedBorder: AppLayout.activeBorder(),
+                      hintText: "Search for task",
+                      hintStyle: TextStyle(color: colorScheme.text),
+                      iconColor: colorScheme.primary,
+                      icon: const Icon(Icons.search)),
+                  style: TextStyle(color: colorScheme.text, decorationColor: colorScheme.primary),
+                  onChanged: (value) {},
+                ),
+              ),
               ListView.builder(
                 itemCount: saveFileData.length,
                 itemBuilder: (context, index) {
                   Map<String, dynamic> indexData = saveFileData[index];
                   return Card(
+                    color: colorScheme.card,
                     elevation: 2,
                     child: ListTile(
+                      textColor: colorScheme.text,
                       leading: Text(indexData["priority"].toString()),
                       title: Text(indexData["title"].toString()),
                       subtitle: Text(indexData["description"]),
@@ -106,8 +167,81 @@ class _APPState extends State<APP> {
                 MaterialPageRoute(builder: (context) => const AddTaskScreen()),
               );
             },
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: colorScheme.primary,
             child: const Icon(Icons.add),
+          ),
+          bottomNavigationBar: Row(
+            children: [
+              ElevatedButton(
+                onPressed: null,
+                child: Icon(Icons.cancel_outlined),
+              ),
+              Expanded(
+                child: SizedBox(
+                  height: 30,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          filterLanguage[1];
+                        }),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                        child: const Text("Real Life"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlue),
+                        child: const Text("Python"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                        child: const Text("HTML"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        child: const Text("Java"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[600]),
+                        child: const Text("Flutter"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+                        child: const Text("C++"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                        child: const Text("Arduino"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green[900]),
+                        child: const Text("Kotlin"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                        child: const Text("My Website"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => null,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                        child: const Text(
+                          "Other",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
           ),
         ),
       ),
@@ -124,72 +258,112 @@ class AddTaskScreen extends StatefulWidget {
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
+  String programmingLanguage = programmingLanguagesChoice.first;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         title: Text("Add $taskTitle"),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: colorScheme.primary,
       ),
-      body: Column(children: [
-        const Text("Title of task"),
-        Padding(
-          padding: const EdgeInsets.only(left: 10, right: 10),
-          child: TextField(
-            decoration: const InputDecoration(border: OutlineInputBorder(), hintText: "A title for your project"),
-            onChanged: (value) {
-              setState(() {
-                if (value != "") {
-                  taskTitle = value;
-                } else {
-                  taskTitle = "New Task";
-                }
-              });
-            },
+      body: Column(
+        children: [
+          const Text("Title of task"),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            child: TextField(
+              decoration: InputDecoration(
+                enabledBorder: AppLayout.inactiveBorder(),
+                focusedBorder: AppLayout.activeBorder(),
+                hintText: "A title for your project",
+                hintStyle: TextStyle(color: colorScheme.text),
+              ),
+              style: TextStyle(color: colorScheme.text),
+              cursorColor: colorScheme.primary,
+              onChanged: (value) {
+                setState(() {
+                  if (value != "") {
+                    taskTitle = value;
+                  } else {
+                    taskTitle = "New Task";
+                  }
+                });
+              },
+            ),
           ),
-        ),
-        const Text("Description of task"),
-        Padding(
-          padding: const EdgeInsets.only(left: 10, right: 10),
-          child: TextField(
-            decoration: const InputDecoration(border: OutlineInputBorder(), hintText: "A description for your project"),
-            onChanged: (value) {},
+          const Text("Description of task"),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            child: TextField(
+              decoration: InputDecoration(
+                enabledBorder: AppLayout.inactiveBorder(),
+                focusedBorder: AppLayout.activeBorder(),
+                hintText: "A description for your project",
+                hintStyle: TextStyle(color: colorScheme.text),
+              ),
+              style: TextStyle(color: colorScheme.text),
+              cursorColor: colorScheme.primary,
+              onChanged: (value) {},
+            ),
           ),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => null,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                child: const Text("None"),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => null,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                  child: const Text("None"),
+                ),
               ),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => null,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: const Text("Low"),
+                ),
+              ),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => null,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow),
+                  child: const Text("Medium"),
+                ),
+              ),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => null,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text("High"),
+                ),
+              ),
+            ],
+          ),
+          Container(
+            color: Colors.grey[700],
+            child: DropdownButton(
+              dropdownColor: Colors.grey[700],
+              value: programmingLanguage,
+              isExpanded: true,
+              borderRadius: BorderRadius.circular(10),
+              items: programmingLanguagesChoice.map(
+                (String value) {
+                  return DropdownMenuItem(
+                    value: value,
+                    child: Text(value),
+                  );
+                },
+              ).toList(),
+              icon: const Icon(Icons.keyboard_arrow_down),
+              onChanged: (value) {
+                setState(() {
+                  programmingLanguage = value!;
+                });
+              },
             ),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => null,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                child: const Text("Low"),
-              ),
-            ),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => null,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow),
-                child: const Text("Medium"),
-              ),
-            ),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => null,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text("High"),
-              ),
-            )
-          ],
-        )
-      ]),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => null,
         child: const Icon(Icons.check),
@@ -206,49 +380,94 @@ class SettingsMenu extends StatefulWidget {
 }
 
 class _SettingsMenuState extends State<SettingsMenu> {
+  void applyNewColor(color) {
+    setState(() {
+      colorScheme.setPrimary(color);
+      accentColor = color;
+    });
+  }
+
   @override
-  String defaultDropdownChoice = userPresets["colorSchemeChoice"]; // TODO make json with app settings and add save color scheme in there
-  bool showProgrammingColor = userPresets["showProgrammingColor"];
-  void applyNewColor(color) {}
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         title: const Text("Settings"),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: colorScheme.primary,
       ),
-      body: GridView.count( // TODO make grid
-        crossAxisCount: 2,
-        
-        
+      body: ListView(
         children: [
-          //
-          // app accent color
-          DropdownButton(
-            value: defaultDropdownChoice,
-            items: colorSchemeChoice.map(
-              (String value) {
-                return DropdownMenuItem(
-                  value: value,
-                  child: Text(value),
-                );
-              },
-            ).toList(),
-            icon: const Icon(Icons.keyboard_arrow_down),
-            onChanged: (value) => applyNewColor(value),
+          ///
+          /// app accent color
+          ///
+          _settingsCard(
+            title: DropdownButton(
+              dropdownColor: Colors.grey[700],
+              value: null,
+              hint: Text("Accent Color: $accentColor"),
+              items: colorSchemeChoice.map(
+                (String value) {
+                  return DropdownMenuItem(
+                    value: value,
+                    child: Text(value),
+                  );
+                },
+              ).toList(),
+              icon: const Icon(Icons.keyboard_arrow_down),
+              onChanged: (value) => applyNewColor(value),
+            ),
           ),
-          const Text("App Accent Color"),
-          //
-          // show programming color
-          Switch(
-            value: showProgrammingColor,
-            onChanged: (value) => setState(() {
-              showProgrammingColor = value;
-            }),
+
+          ///
+          /// show programming color
+          ///
+          _settingsCard(
+            title: const Text("Show Programming Color"),
+            leading: Switch(
+              value: showProgrammingColor,
+              activeColor: colorScheme.primary,
+              onChanged: (value) => setState(() {
+                showProgrammingColor = value;
+              }),
+            ),
           ),
-          const Text("Show Programming Color")
+
+          ///
+          /// dark mode
+          ///
+          _settingsCard(
+            title: const Text("Dark Mode"),
+            leading: Switch(
+              value: darkMode,
+              activeColor: colorScheme.primary,
+              onChanged: (value) => setState(() {
+                colorScheme.switchLightDarkMode();
+                darkMode = value;
+              }),
+            ),
+          ),
+          _settingsCard(
+              title: const Text("Only Search In Title"),
+              leading: Switch(
+                value: onlySearchInTitle,
+                activeColor: colorScheme.primary,
+                onChanged: (value) => setState(() {
+                  onlySearchInTitle = !onlySearchInTitle;
+                }),
+              ))
         ],
       ),
     );
   }
+}
+
+Widget _settingsCard({dynamic leading, dynamic title}) {
+  return Card(
+    color: colorScheme.card,
+    elevation: 2,
+    child: ListTile(
+      title: title,
+      leading: leading,
+    ),
+  );
 }
