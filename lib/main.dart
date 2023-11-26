@@ -69,6 +69,9 @@ class AppLayout {
 
 APPcolorScheme colorScheme = APPcolorScheme();
 
+//////////
+// main //
+//////////
 void main() {
   runApp(const MaterialApp(
     home: APP(),
@@ -422,7 +425,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
           /// show programming color
           ///
           _settingsCard(
-            title: const Text("Show Programming Color"),
+            title: _settingsCardTitle("Show Programming Color"),
             leading: Switch(
               value: showProgrammingColor,
               activeColor: colorScheme.primary,
@@ -436,7 +439,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
           /// dark mode
           ///
           _settingsCard(
-            title: const Text("Dark Mode"),
+            title: _settingsCardTitle("Dark Mode"),
             leading: Switch(
               value: darkMode,
               activeColor: colorScheme.primary,
@@ -447,7 +450,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
             ),
           ),
           _settingsCard(
-              title: const Text("Only Search In Title"),
+              title: _settingsCardTitle("Only Search In Title"),
               leading: Switch(
                 value: onlySearchInTitle,
                 activeColor: colorScheme.primary,
@@ -469,5 +472,12 @@ Widget _settingsCard({dynamic leading, dynamic title}) {
       title: title,
       leading: leading,
     ),
+  );
+}
+
+Widget _settingsCardTitle(String title) {
+  return Text(
+    title,
+    style: TextStyle(color: colorScheme.text),
   );
 }
