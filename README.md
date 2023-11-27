@@ -1,16 +1,28 @@
-# project_to_do_list
+# project to-do list
 
-A new Flutter project.
+A to-do list app to save all your future programming projects
 
-## Getting Started
+## features
 
-This project is a starting point for a Flutter application.
+- home page with to-do tab and completed tab
 
-A few resources to get you started if this is your first Flutter project:
+- customizable app with deticated settings menu
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- save data in the cloud with google drive 
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- add task with a title, description, programming language for your taak and a priority
+
+## you can use this for real life task
+
+there is a deticated "programming language" called 'real life'
+you can use this for your irl task or computer tasks not associated with programming
+
+## filter your tasks 
+
+you can filter your tasks on their programming language, priority or search for its name or description 
+
+## an app made with the flutter framework 
+
+this is a project to learn working with flutter, ui design and cloud saving 
+
+>>> Sem
