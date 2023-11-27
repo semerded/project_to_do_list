@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 const String jsonFilePath = "assets/toDoSaveFile.json";
-const JsonDecoder decoder = JsonDecoder();
-List<dynamic> saveFileData = [];
+List<dynamic> toDoTasks = [];
 List<String> colorSchemeChoice = ['Green', 'Red', 'Blue', 'Orange', 'Purple'];
 Map<String, MaterialColor> colorSchemeReference = {'Green': Colors.green, 'Red': Colors.red, 'Blue': Colors.blue, 'Orange': Colors.orange, 'Purple': Colors.purple};
 
@@ -22,9 +21,9 @@ bool onlySearchInTitle = userPresets["onlySearchInTitle"];
 //   return  Colors.white;
 // }
 
-Future<void> readJson() async {
+Future<List<dynamic>> readJson() async {
   final String jsonString = await rootBundle.loadString(jsonFilePath);
-  saveFileData = jsonDecode(jsonString);
+  return jsonDecode(jsonString);
 }
 
 class APPcolorScheme {
@@ -89,7 +88,11 @@ class _APPState extends State<APP> {
   @override
   void initState() {
     super.initState();
-    readJson();
+    readJson().then((List<dynamic> value) {
+setState(() {
+  toDoTasks = value;
+});
+    });
   }
 
   List<String> filterLanguage = [];
@@ -98,6 +101,7 @@ class _APPState extends State<APP> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
+        animationDuration: const Duration(milliseconds: 300),
         length: 2,
         child: Scaffold(
           backgroundColor: colorScheme.background,
@@ -114,7 +118,13 @@ class _APPState extends State<APP> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SettingsMenu()),
+                    MaterialPageRoute<bool>(builder: (context) => const SettingsMenu()),
+                  ).then(
+                    (value) {
+                      if (value != null && value) {
+                        setState(() {});
+                      }
+                    },
                   );
                 },
                 icon: const Icon(Icons.settings),
@@ -145,9 +155,9 @@ class _APPState extends State<APP> {
                 ),
               ),
               ListView.builder(
-                itemCount: saveFileData.length,
+                itemCount: toDoTasks.length,
                 itemBuilder: (context, index) {
-                  Map<String, dynamic> indexData = saveFileData[index];
+                  Map<String, dynamic> indexData = toDoTasks[index];
                   return Card(
                     color: colorScheme.card,
                     elevation: 2,
@@ -174,6 +184,7 @@ class _APPState extends State<APP> {
             child: const Icon(Icons.add),
           ),
           bottomNavigationBar: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
                 onPressed: null,
@@ -193,47 +204,47 @@ class _APPState extends State<APP> {
                         child: const Text("Real Life"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlue),
                         child: const Text("Python"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
                         child: const Text("HTML"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                         child: const Text("Java"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[600]),
                         child: const Text("Flutter"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
                         child: const Text("C++"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
                         child: const Text("Arduino"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.green[900]),
                         child: const Text("Kotlin"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                         child: const Text("My Website"),
                       ),
                       ElevatedButton(
-                        onPressed: () => null,
+                        onPressed: () => setState(() {}),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                         child: const Text(
                           "Other",
@@ -395,6 +406,12 @@ class _SettingsMenuState extends State<SettingsMenu> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: AppBar(
+        leading: IconButton( // TODO laat het werken voor telefoon back button
+          onPressed: () {
+            Navigator.of(context).pop(true);
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
         title: const Text("Settings"),
         backgroundColor: colorScheme.primary,
       ),
@@ -481,3 +498,5 @@ Widget _settingsCardTitle(String title) {
     style: TextStyle(color: colorScheme.text),
   );
 }
+
+// TODO add screen for detailed info of task
