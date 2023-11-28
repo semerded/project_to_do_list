@@ -191,12 +191,9 @@ class _APPState extends State<APP> {
                 child: Icon(Icons.cancel_outlined),
               ),
               Expanded(
-                                child: SizedBox(
+                child: SizedBox(
                   height: 30,
-      
                   child: ListView(
-                    
-
                     scrollDirection: Axis.horizontal,
                     children: [
                       ElevatedButton(
@@ -277,7 +274,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
   String programmingLanguage = programmingLanguagesChoice.first;
   Map<String, bool> criteriasFilledIn = {"title": false, "language": true, "priority": false};
-  Map<String, String> newTaskData = {"title": "", "description": "", "language": "", "priority": ""};
+  Map<String, dynamic> newTaskData = {"title": "", "description": "", "language": "", "priority": "", "subtasks": []};
+  Map<String, String> newSubTaskData = {"title": "", "subtitle": ""};
 
   bool checkIfAllCriteriaIsFilledIn(criteriaList) {
     bool allCriteriaFilledIn = true;
@@ -331,9 +329,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               },
             ),
           ),
-          /// 
+
+          ///
           /// add description
-          /// 
+          ///
           Text(
             "Description of task",
             style: TextStyle(color: colorScheme.text),
@@ -355,7 +354,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               cursorColor: colorScheme.primary,
               onChanged: (value) {
                 setState(() {
-                newTaskData["description"] = value;
+                  newTaskData["description"] = value;
                 });
               },
             ),
@@ -368,7 +367,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                      newTaskData["priority"] = "none";
+                        newTaskData["priority"] = "none";
                         criteriasFilledIn["priority"] = true;
                       });
                     },
@@ -383,11 +382,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                      newTaskData["priority"] = "low";
+                        newTaskData["priority"] = "low";
                         criteriasFilledIn["priority"] = true;
                       });
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: newTaskData["priority"] == "low" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      shape: newTaskData["priority"] == "low" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,
+                    ),
                     child: const Text("Low"),
                   ),
                 ),
@@ -395,11 +397,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                      newTaskData["priority"] = "medium";
+                        newTaskData["priority"] = "medium";
                         criteriasFilledIn["priority"] = true;
                       });
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow, shape: newTaskData["priority"] == "medium" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.yellow,
+                      shape: newTaskData["priority"] == "medium" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,
+                    ),
                     child: const Text("Medium"),
                   ),
                 ),
@@ -407,11 +412,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                      newTaskData["priority"] = "high";
+                        newTaskData["priority"] = "high";
                         criteriasFilledIn["priority"] = true;
                       });
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: newTaskData["priority"] == "high" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: newTaskData["priority"] == "high" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,
+                    ),
                     child: const Text("High"),
                   ),
                 ),
@@ -444,7 +452,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               },
             ),
           ),
-          Text("hello")
+          Card(
+            elevation: 2,
+            child: ListTile(
+              leading: Icon(Icons.add),
+              title: Text("add subtask"),
+              onTap: () => null,
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: newTaskData["subtasks"].length,
+              itemBuilder: (context, index) {
+                Map<String, String> subtask = newTaskData["subtasks"][index];
+                return _subtaskCard(subtask["title"]!, subtask["subtitle"]!);
+              
+              },
+            ),
+          )
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -552,8 +577,20 @@ class _SettingsMenuState extends State<SettingsMenu> {
   }
 }
 
+Widget _subtaskCard(String title, String subtitle) {
+ return Card(
+    color: colorScheme.card,
+    elevation: 2,
+    child: ListTile(
+      title: Text(title),
+      subtitle: Text(subtitle),
+    ),
+  );
+}
+
+
 Widget _settingsCard({dynamic leading, dynamic title}) {
-  return Card(
+ return Card(
     color: colorScheme.card,
     elevation: 2,
     child: ListTile(
@@ -562,6 +599,7 @@ Widget _settingsCard({dynamic leading, dynamic title}) {
     ),
   );
 }
+
 
 Widget _settingsCardTitle(String title) {
   return Text(
