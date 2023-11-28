@@ -89,9 +89,9 @@ class _APPState extends State<APP> {
   void initState() {
     super.initState();
     readJson().then((List<dynamic> value) {
-setState(() {
-  toDoTasks = value;
-});
+      setState(() {
+        toDoTasks = value;
+      });
     });
   }
 
@@ -191,9 +191,12 @@ setState(() {
                 child: Icon(Icons.cancel_outlined),
               ),
               Expanded(
-                child: SizedBox(
+                                child: SizedBox(
                   height: 30,
+      
                   child: ListView(
+                    
+
                     scrollDirection: Axis.horizontal,
                     children: [
                       ElevatedButton(
@@ -273,6 +276,19 @@ class AddTaskScreen extends StatefulWidget {
 class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
   String programmingLanguage = programmingLanguagesChoice.first;
+  Map<String, bool> criteriasFilledIn = {"title": false, "language": true, "priority": false};
+  Map<String, String> newTaskData = {"title": "", "description": "", "language": "", "priority": ""};
+
+  bool checkIfAllCriteriaIsFilledIn(criteriaList) {
+    bool allCriteriaFilledIn = true;
+    for (var item in criteriaList.values) {
+      if (item == false) {
+        allCriteriaFilledIn = false;
+      }
+    }
+    return allCriteriaFilledIn;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -283,9 +299,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ),
       body: Column(
         children: [
-          const Text("Title of task"),
           Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
+            padding: const EdgeInsets.only(top: 20),
+            child: Text(
+              "Title of task",
+              style: TextStyle(color: colorScheme.text),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 20),
             child: TextField(
               decoration: InputDecoration(
                 enabledBorder: AppLayout.inactiveBorder(),
@@ -296,70 +318,115 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               style: TextStyle(color: colorScheme.text),
               cursorColor: colorScheme.primary,
               onChanged: (value) {
+                newTaskData["title"] = value;
                 setState(() {
                   if (value != "") {
                     taskTitle = value;
+                    criteriasFilledIn["title"] = true;
                   } else {
                     taskTitle = "New Task";
+                    criteriasFilledIn["title"] = false;
                   }
                 });
               },
             ),
           ),
-          const Text("Description of task"),
+          /// 
+          /// add description
+          /// 
+          Text(
+            "Description of task",
+            style: TextStyle(color: colorScheme.text),
+          ),
           Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 20),
             child: TextField(
               decoration: InputDecoration(
                 enabledBorder: AppLayout.inactiveBorder(),
                 focusedBorder: AppLayout.activeBorder(),
+                errorBorder: AppLayout.inactiveBorder(),
+                focusedErrorBorder: AppLayout.activeBorder(),
                 hintText: "A description for your project",
                 hintStyle: TextStyle(color: colorScheme.text),
+                helperStyle: const TextStyle(color: Colors.red),
+                helperText: newTaskData["description"] == "" && checkIfAllCriteriaIsFilledIn(criteriasFilledIn) ? "maybe it is better to add a description" : null,
               ),
               style: TextStyle(color: colorScheme.text),
               cursorColor: colorScheme.primary,
-              onChanged: (value) {},
+              onChanged: (value) {
+                setState(() {
+                newTaskData["description"] = value;
+                });
+              },
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => null,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                  child: const Text("None"),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                      newTaskData["priority"] = "none";
+                        criteriasFilledIn["priority"] = true;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      shape: newTaskData["priority"] == "none" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,
+                    ),
+                    child: const Text("None"),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => null,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  child: const Text("Low"),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                      newTaskData["priority"] = "low";
+                        criteriasFilledIn["priority"] = true;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: newTaskData["priority"] == "low" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,),
+                    child: const Text("Low"),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => null,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow),
-                  child: const Text("Medium"),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                      newTaskData["priority"] = "medium";
+                        criteriasFilledIn["priority"] = true;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow, shape: newTaskData["priority"] == "medium" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,),
+                    child: const Text("Medium"),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => null,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text("High"),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                      newTaskData["priority"] = "high";
+                        criteriasFilledIn["priority"] = true;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: newTaskData["priority"] == "high" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,),
+                    child: const Text("High"),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Container(
             color: Colors.grey[700],
             child: DropdownButton(
               dropdownColor: Colors.grey[700],
-              value: programmingLanguage,
               isExpanded: true,
+              hint: Text("selected language: $programmingLanguage"),
               borderRadius: BorderRadius.circular(10),
+              icon: const Icon(Icons.keyboard_arrow_down),
+              padding: const EdgeInsets.all(10),
               items: programmingLanguagesChoice.map(
                 (String value) {
                   return DropdownMenuItem(
@@ -368,18 +435,21 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   );
                 },
               ).toList(),
-              icon: const Icon(Icons.keyboard_arrow_down),
               onChanged: (value) {
+                newTaskData["language"] = value!;
                 setState(() {
-                  programmingLanguage = value!;
+                  programmingLanguage = value;
+                  criteriasFilledIn["language"] = true;
                 });
               },
             ),
           ),
+          Text("hello")
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => null,
+        backgroundColor: checkIfAllCriteriaIsFilledIn(criteriasFilledIn) ? Colors.green : Colors.red,
         child: const Icon(Icons.check),
       ),
     );
@@ -406,7 +476,8 @@ class _SettingsMenuState extends State<SettingsMenu> {
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: AppBar(
-        leading: IconButton( // TODO laat het werken voor telefoon back button
+        leading: IconButton(
+          // TODO laat het werken voor telefoon back button
           onPressed: () {
             Navigator.of(context).pop(true);
           },
