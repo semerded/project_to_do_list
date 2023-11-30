@@ -1,14 +1,20 @@
-[
-    {
-        "title": "test123",
-        "description": "nothing",
-        "language": "Flutter",
-        "priority": "High"
-    }, 
-    {
-        "title": "clean stair pole",
-        "description": "do the one for the attic and maybe the other one. The one for the attic is really dirty!",
-        "language": "real life",
-        "priority": "none"
-    }
-]
+{
+    "toDo": [
+        {
+            "title": "test123",
+            "description": "nothing",
+            "taskType": "Flutter",
+            "priority": "High"
+        }
+    ],
+    "inProgress": [
+        {
+            "title": "clean stair pole",
+            "description": "do the one for the attic and maybe the other one. The one for the attic is really dirty!",
+            "taskType": "real life",
+            "priority": "none",
+            "status": "inProgress"
+        }
+    ],
+    "completed": []
+}

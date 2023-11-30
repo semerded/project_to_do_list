@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 const String jsonFilePath = "assets/toDoSaveFile.json";
-List<dynamic> toDoTasks = [];
+Map<String, dynamic> toDoTasks = {};
 List<String> colorSchemeChoice = ['Green', 'Red', 'Blue', 'Orange', 'Purple'];
 Map<String, MaterialColor> colorSchemeReference = {'Green': Colors.green, 'Red': Colors.red, 'Blue': Colors.blue, 'Orange': Colors.orange, 'Purple': Colors.purple};
 
-List<String> programmingLanguagesChoice = ['Real Life', 'Python', 'HTML', 'Java', 'Flutter', 'C++', 'Arduino', 'Kotlin', 'My Website', 'Other'];
+List<String> taskCatergorieChoice = ['Real Life', 'Python', 'HTML', 'Java', 'Flutter', 'C++', 'Arduino', 'Kotlin', 'My Website', 'Other'];
 
 Map<String, dynamic> userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false};
 
@@ -17,11 +17,9 @@ bool darkMode = userPresets["darkMode"];
 bool onlySearchInTitle = userPresets["onlySearchInTitle"];
 // TODO maak json map
 
-// test() {
-//   return  Colors.white;
-// }
+// TODO add customizable taskTypeChoices
 
-Future<List<dynamic>> readJson() async {
+Future<Map<String, dynamic>> readJson() async {
   final String jsonString = await rootBundle.loadString(jsonFilePath);
   return jsonDecode(jsonString);
 }
@@ -66,6 +64,16 @@ class AppLayout {
   }
 }
 
+class Data {
+  // TODO change name
+  static String checkIfTaskTypeIsValid(taskTypeOfTask) {
+    if (taskCatergorieChoice.contains(taskTypeOfTask)) {
+      return taskTypeOfTask;
+    }
+    return "Other";
+  }
+}
+
 APPcolorScheme colorScheme = APPcolorScheme();
 
 //////////
@@ -88,21 +96,42 @@ class _APPState extends State<APP> {
   @override
   void initState() {
     super.initState();
-    readJson().then((List<dynamic> value) {
+    readJson().then((Map<String, dynamic> value) {
       setState(() {
         toDoTasks = value;
       });
     });
   }
 
-  List<String> filterLanguage = [];
+  Widget placeToDoTasks(currentTab) {
+    List<dynamic> toDoTasksPerCategoryOfCompletion = toDoTasks[currentTab];
+    return ListView.builder(
+      itemCount: toDoTasksPerCategoryOfCompletion.length,
+      itemBuilder: (context, index) {
+        Map<String, dynamic> indexData = toDoTasksPerCategoryOfCompletion[index];
+        return Card(
+          color: colorScheme.card,
+          elevation: 2,
+          child: ListTile(
+            textColor: colorScheme.text,
+            leading: Text(indexData["priority"].toString()),
+            title: Text(indexData["title"].toString()),
+            subtitle: Text(indexData["description"]),
+            trailing: Text(Data.checkIfTaskTypeIsValid(indexData["taskType"].toString())),
+          ),
+        );
+      },
+    );
+  }
+
+  List<String> filterTaskType = [];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
         animationDuration: const Duration(milliseconds: 300),
-        length: 2,
+        length: 3,
         child: Scaffold(
           backgroundColor: colorScheme.background,
           appBar: AppBar(
@@ -111,7 +140,7 @@ class _APPState extends State<APP> {
               child: Text("The Project To Do List"),
             ),
             bottom: const TabBar(
-              tabs: [Text("In Progress"), Text("Done")],
+              tabs: [Text("To Do"), Text("In Progress"), Text("Done")],
             ),
             actions: [
               IconButton(
@@ -133,7 +162,7 @@ class _APPState extends State<APP> {
           ),
 
           // main body
-          body: TabBarView(
+          body: Column(
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10),
@@ -154,22 +183,14 @@ class _APPState extends State<APP> {
                   onChanged: (value) {},
                 ),
               ),
-              ListView.builder(
-                itemCount: toDoTasks.length,
-                itemBuilder: (context, index) {
-                  Map<String, dynamic> indexData = toDoTasks[index];
-                  return Card(
-                    color: colorScheme.card,
-                    elevation: 2,
-                    child: ListTile(
-                      textColor: colorScheme.text,
-                      leading: Text(indexData["priority"].toString()),
-                      title: Text(indexData["title"].toString()),
-                      subtitle: Text(indexData["description"]),
-                      trailing: Text(indexData["language"].toString()),
-                    ),
-                  );
-                },
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    placeToDoTasks("toDo"),
+                    placeToDoTasks("inProgress"),
+                    placeToDoTasks("completed"),
+                  ],
+                ),
               ),
             ],
           ),
@@ -188,17 +209,24 @@ class _APPState extends State<APP> {
             children: [
               ElevatedButton(
                 onPressed: null,
-                child: Icon(Icons.cancel_outlined),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(width: 1, color: colorScheme.text),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: Icon(Icons.cancel_outlined, color: colorScheme.text),
               ),
-              Expanded(
+              Flexible(
                 child: SizedBox(
                   height: 30,
                   child: ListView(
+                    shrinkWrap: true,
                     scrollDirection: Axis.horizontal,
                     children: [
                       ElevatedButton(
                         onPressed: () => setState(() {
-                          filterLanguage[1];
+                          filterTaskType[1];
                         }),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
                         child: const Text("Real Life"),
@@ -272,10 +300,10 @@ class AddTaskScreen extends StatefulWidget {
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
-  String programmingLanguage = programmingLanguagesChoice.first;
-  Map<String, bool> criteriasFilledIn = {"title": false, "language": true, "priority": false};
-  Map<String, dynamic> newTaskData = {"title": "", "description": "", "language": "", "priority": "", "subtasks": []};
-  Map<String, String> newSubTaskData = {"title": "", "subtitle": ""};
+  String taskType = taskCatergorieChoice.first;
+  Map<String, bool> criteriasFilledIn = {"title": false, "taskType": true, "priority": false};
+  Map<String, dynamic> newTaskData = {"title": "", "description": "", "taskType": "", "priority": "", "subtasks": []};
+  Map<String, String> newSubTaskData = {"title": "", "description": ""};
 
   bool checkIfAllCriteriaIsFilledIn(criteriaList) {
     bool allCriteriaFilledIn = true;
@@ -431,11 +459,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             child: DropdownButton(
               dropdownColor: Colors.grey[700],
               isExpanded: true,
-              hint: Text("selected language: $programmingLanguage"),
+              hint: Text("selected task type: $taskType"),
               borderRadius: BorderRadius.circular(10),
               icon: const Icon(Icons.keyboard_arrow_down),
               padding: const EdgeInsets.all(10),
-              items: programmingLanguagesChoice.map(
+              items: taskCatergorieChoice.map(
                 (String value) {
                   return DropdownMenuItem(
                     value: value,
@@ -444,10 +472,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 },
               ).toList(),
               onChanged: (value) {
-                newTaskData["language"] = value!;
+                newTaskData["taskType"] = value!;
                 setState(() {
-                  programmingLanguage = value;
-                  criteriasFilledIn["language"] = true;
+                  taskType = value;
+                  criteriasFilledIn["taskType"] = true;
                 });
               },
             ),
@@ -457,7 +485,67 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             child: ListTile(
               leading: Icon(Icons.add),
               title: Text("add subtask"),
-              onTap: () => null,
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: ((context) => AlertDialog(
+                        backgroundColor: colorScheme.background,
+                        content: Stack(
+                          children: [
+                            Form(
+                              child: Column(
+                                children: [
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      enabledBorder: AppLayout.inactiveBorder(),
+                                      focusedBorder: AppLayout.activeBorder(),
+                                      hintText: "Title for sub-task",
+                                      hintStyle: TextStyle(color: colorScheme.text),
+                                    ),
+                                    style: TextStyle(color: colorScheme.text),
+                                    cursorColor: colorScheme.primary,
+                                    onChanged: (value) => setState(() {
+                                      newSubTaskData["title"] = value;
+                                    }),
+                                  ),
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      enabledBorder: AppLayout.inactiveBorder(),
+                                      focusedBorder: AppLayout.activeBorder(),
+                                      hintText: "Description for sub-task",
+                                      hintStyle: TextStyle(color: colorScheme.text),
+                                    ),
+                                    style: TextStyle(color: colorScheme.text),
+                                    cursorColor: colorScheme.primary,
+                                    onChanged: (value) => newSubTaskData["description"] = value,
+                                  ),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        if (newSubTaskData["title"] != "") {
+                                          newTaskData["subtasks"].add(Map<String, String>.from(newSubTaskData));
+                                          newSubTaskData["title"] = "";
+                                          newSubTaskData["description"] = "";
+                                        }
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: newSubTaskData["title"] != "" ? Colors.green : Colors.red,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(26),
+                                      ),
+                                    ),
+                                    label: const Text("Add sub-task"),
+                                    icon: const Icon(Icons.add),
+                                  )
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      )),
+                );
+              },
             ),
           ),
           Expanded(
@@ -465,8 +553,21 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               itemCount: newTaskData["subtasks"].length,
               itemBuilder: (context, index) {
                 Map<String, String> subtask = newTaskData["subtasks"][index];
-                return _subtaskCard(subtask["title"]!, subtask["subtitle"]!);
-              
+                return Card(
+                  color: colorScheme.card,
+                  elevation: 2,
+                  child: ListTile(
+                    title: Text(subtask["title"]!),
+                    subtitle: Text(subtask["description"]!),
+                    trailing: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            newTaskData["subtasks"].removeAt(index);
+                          });
+                        },
+                        icon: const Icon(Icons.delete_forever)),
+                  ),
+                );
               },
             ),
           )
@@ -577,20 +678,8 @@ class _SettingsMenuState extends State<SettingsMenu> {
   }
 }
 
-Widget _subtaskCard(String title, String subtitle) {
- return Card(
-    color: colorScheme.card,
-    elevation: 2,
-    child: ListTile(
-      title: Text(title),
-      subtitle: Text(subtitle),
-    ),
-  );
-}
-
-
 Widget _settingsCard({dynamic leading, dynamic title}) {
- return Card(
+  return Card(
     color: colorScheme.card,
     elevation: 2,
     child: ListTile(
@@ -599,7 +688,6 @@ Widget _settingsCard({dynamic leading, dynamic title}) {
     ),
   );
 }
-
 
 Widget _settingsCardTitle(String title) {
   return Text(
