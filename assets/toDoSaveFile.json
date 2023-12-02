@@ -4,7 +4,7 @@
             "title": "test123",
             "description": "nothing",
             "taskType": "Flutter",
-            "priority": "High"
+            "priority": "high"
         }
     ],
     "inProgress": [
@@ -12,9 +12,13 @@
             "title": "clean stair pole",
             "description": "do the one for the attic and maybe the other one. The one for the attic is really dirty!",
             "taskType": "real life",
-            "priority": "none",
-            "status": "inProgress"
+            "priority": "none"
         }
     ],
-    "completed": []
+    "completed": [{
+        "title": "long as name to test some shit this is only the title",
+        "description": "do the one for the attic and maybe the other one. The one for the attic is really dirty! and do some other thigns because why not this is fun lets go flutter is fun",
+        "taskType": "Python",
+        "priority": "medium"
+    }]
 }

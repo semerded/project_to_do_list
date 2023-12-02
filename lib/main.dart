@@ -1,13 +1,43 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
 
 const String jsonFilePath = "assets/toDoSaveFile.json";
+
 Map<String, dynamic> toDoTasks = {};
 List<String> colorSchemeChoice = ['Green', 'Red', 'Blue', 'Orange', 'Purple'];
 Map<String, MaterialColor> colorSchemeReference = {'Green': Colors.green, 'Red': Colors.red, 'Blue': Colors.blue, 'Orange': Colors.orange, 'Purple': Colors.purple};
 
-List<String> taskCatergorieChoice = ['Real Life', 'Python', 'HTML', 'Java', 'Flutter', 'C++', 'Arduino', 'Kotlin', 'My Website', 'Other'];
+List<String> taskTypeCatergories = ['Real Life', 'Python', 'HTML', 'Java', 'Flutter', 'C++', 'Arduino', 'JavaScript', 'Kotlin', 'My Website', 'Other'];
+Map<String, dynamic> taskTypeCatergoriesColors = {
+  taskTypeCatergories[0]: Colors.grey,
+  taskTypeCatergories[1]: Colors.lightBlue,
+  taskTypeCatergories[2]: Colors.orange,
+  taskTypeCatergories[3]: Colors.red,
+  taskTypeCatergories[4]: Colors.blue[600],
+  taskTypeCatergories[5]: Colors.purple,
+  taskTypeCatergories[6]: Colors.teal,
+  taskTypeCatergories[7]: Colors.yellow[700],
+  taskTypeCatergories[8]: Colors.green[900],
+  taskTypeCatergories[9]: Colors.green,
+  taskTypeCatergories[10]: Colors.black
+};
+Map<String, dynamic> taskTypesActive = {
+  taskTypeCatergories[0]: true,
+  taskTypeCatergories[1]: true,
+  taskTypeCatergories[2]: true,
+  taskTypeCatergories[3]: true,
+  taskTypeCatergories[4]: true,
+  taskTypeCatergories[5]: true,
+  taskTypeCatergories[6]: true,
+  taskTypeCatergories[7]: true,
+  taskTypeCatergories[8]: true,
+  taskTypeCatergories[9]: true,
+  taskTypeCatergories[10]: true,
+};
+
+Map<String, dynamic> taskPriorityColors = {'none': colorScheme.text, 'low': Colors.green, 'medium': Colors.yellow, 'high': Colors.red};
 
 Map<String, dynamic> userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false};
 
@@ -15,13 +45,36 @@ String accentColor = userPresets["colorSchemeChoice"]; // TODO make json with ap
 bool showProgrammingColor = userPresets["showProgrammingColor"];
 bool darkMode = userPresets["darkMode"];
 bool onlySearchInTitle = userPresets["onlySearchInTitle"];
-// TODO maak json map
 
-// TODO add customizable taskTypeChoices
+// Future<dynamic> write() async {
+//   final String jsonString = await rootBundle.loadString(jsonFilePath);
+//   return jsonEncode(jsonString);
+// }
 
-Future<Map<String, dynamic>> readJson() async {
-  final String jsonString = await rootBundle.loadString(jsonFilePath);
-  return jsonDecode(jsonString);
+Future<File> get _localPath async {
+  final directory = await getApplicationDocumentsDirectory();
+  final path = directory.path;
+  return File('$path/JSONtaskSaveFile.json');
+}
+
+Future<File> writeToJSONtaskSaveFile(jsonDataAsJsonObject) async {
+  final file = await _localPath;
+
+  // Write the file
+  return file.writeAsString(jsonEncode(jsonDataAsJsonObject));
+}
+
+Future<Map<String, dynamic>> readToDoTasksFromJSONtaskSaveFile() async {
+  try {
+    final file = await _localPath;
+
+    // Read the file
+    final contents = await file.readAsString();
+    return jsonDecode(contents);
+  } catch (e) {
+    // If encountering an error, return 0
+    return {"toDo": [], "inProgress": [], "completed": []};
+  }
 }
 
 class APPcolorScheme {
@@ -62,12 +115,29 @@ class AppLayout {
       borderRadius: const BorderRadius.all(Radius.circular(10)),
     );
   }
+
+  static ShapeBorder cardBorder({double borderRadius = 10, dynamic borderColor = Colors.white, double borderWidth = 1}) {
+    return RoundedRectangleBorder(
+      side: BorderSide(
+        color: borderColor,
+        width: borderWidth,
+      ),
+      borderRadius: BorderRadius.circular(borderRadius),
+    );
+  }
+
+  static Widget colorAdaptivText(text) {
+    return Text(
+      text,
+      style: TextStyle(color: colorScheme.text),
+    );
+  }
 }
 
 class Data {
   // TODO change name
   static String checkIfTaskTypeIsValid(taskTypeOfTask) {
-    if (taskCatergorieChoice.contains(taskTypeOfTask)) {
+    if (taskTypeCatergories.contains(taskTypeOfTask)) {
       return taskTypeOfTask;
     }
     return "Other";
@@ -92,15 +162,31 @@ class APP extends StatefulWidget {
   State<APP> createState() => _APPState();
 }
 
+//////////////////////////
+// homepage (task page) //
+//////////////////////////
 class _APPState extends State<APP> {
   @override
   void initState() {
     super.initState();
-    readJson().then((Map<String, dynamic> value) {
+    readToDoTasksFromJSONtaskSaveFile().then((Map<String, dynamic> value) {
       setState(() {
         toDoTasks = value;
       });
     });
+  }
+
+  bool checkIfTaskIsNotFilteredOut(Map<String, dynamic> taskData) {
+    if (taskData["title"].contains(filteredTasksBySearch)) {
+      return true;
+    }
+    if (!onlySearchInTitle && taskData["description"].contains(filteredTasksBySearch)) {
+      return true;
+    }
+    if (taskTypesActive[taskData["taskType"]]) {
+      return true;
+    }
+    return false;
   }
 
   Widget placeToDoTasks(currentTab) {
@@ -108,23 +194,75 @@ class _APPState extends State<APP> {
     return ListView.builder(
       itemCount: toDoTasksPerCategoryOfCompletion.length,
       itemBuilder: (context, index) {
-        Map<String, dynamic> indexData = toDoTasksPerCategoryOfCompletion[index];
-        return Card(
-          color: colorScheme.card,
-          elevation: 2,
-          child: ListTile(
-            textColor: colorScheme.text,
-            leading: Text(indexData["priority"].toString()),
-            title: Text(indexData["title"].toString()),
-            subtitle: Text(indexData["description"]),
-            trailing: Text(Data.checkIfTaskTypeIsValid(indexData["taskType"].toString())),
+        Map<String, dynamic> toDoTaskPerIndex = toDoTasksPerCategoryOfCompletion[index];
+        String taskType = Data.checkIfTaskTypeIsValid(toDoTaskPerIndex["taskType"].toString());
+        if (checkIfTaskIsNotFilteredOut(toDoTaskPerIndex)) {
+          return Card(
+            color: colorScheme.card,
+            elevation: 2,
+            child: ListTile(
+              textColor: colorScheme.text,
+              shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[toDoTaskPerIndex["priority"]])),
+              title: Text(
+                toDoTaskPerIndex["title"].toString(),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: colorScheme.primary, fontSize: 20, fontWeight: FontWeight.bold), // TODO bold
+              ),
+              subtitle: Text(
+                toDoTaskPerIndex["description"],
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: Text(
+                taskType,
+                style: TextStyle(color: taskTypeCatergoriesColors[taskType], fontWeight: FontWeight.bold),
+              ),
+              onTap: () => showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text(toDoTaskPerIndex["title"]),
+                  titleTextStyle: TextStyle(color: colorScheme.primary),
+                  backgroundColor: colorScheme.background,
+                  content: Stack(
+                    children: [AppLayout.colorAdaptivText(toDoTaskPerIndex["description"])],
+                  ),
+                ),
+              ),
+            ),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+
+  Widget filterTaskTypeButton() {
+    return ListView.builder(
+      shrinkWrap: true,
+      scrollDirection: Axis.horizontal,
+      itemCount: taskTypeCatergories.length,
+      itemBuilder: (context, index) {
+        String taskTypeElement = taskTypeCatergories[index];
+        return ElevatedButton(
+          onPressed: () => setState(() {
+            taskTypesActive[taskTypeElement] = !taskTypesActive[taskTypeElement];
+          }),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: taskTypeCatergoriesColors[taskTypeElement],
+            shape: taskTypesActive[taskTypeElement] ?  RoundedRectangleBorder(
+              side: BorderSide(width: 5, color: colorScheme.text),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(5),
+              ),
+            ) : null
           ),
+          child: Text(taskTypeElement),
         );
       },
     );
   }
 
-  List<String> filterTaskType = [];
+  String filteredTasksBySearch = "";
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +318,9 @@ class _APPState extends State<APP> {
                       iconColor: colorScheme.primary,
                       icon: const Icon(Icons.search)),
                   style: TextStyle(color: colorScheme.text, decorationColor: colorScheme.primary),
-                  onChanged: (value) {},
+                  onChanged: (value) => setState(() {
+                    filteredTasksBySearch = value;
+                  }),
                 ),
               ),
               Expanded(
@@ -199,6 +339,18 @@ class _APPState extends State<APP> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AddTaskScreen()),
+              ).then(
+                (value) {
+                  if (value != null && value) {
+                    setState(() {
+                      readToDoTasksFromJSONtaskSaveFile().then((Map<String, dynamic> value) {
+                        setState(() {
+                          toDoTasks = value;
+                        });
+                      });
+                    });
+                  }
+                },
               );
             },
             backgroundColor: colorScheme.primary,
@@ -218,70 +370,7 @@ class _APPState extends State<APP> {
                 child: Icon(Icons.cancel_outlined, color: colorScheme.text),
               ),
               Flexible(
-                child: SizedBox(
-                  height: 30,
-                  child: ListView(
-                    shrinkWrap: true,
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => setState(() {
-                          filterTaskType[1];
-                        }),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                        child: const Text("Real Life"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlue),
-                        child: const Text("Python"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                        child: const Text("HTML"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                        child: const Text("Java"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[600]),
-                        child: const Text("Flutter"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-                        child: const Text("C++"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-                        child: const Text("Arduino"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green[900]),
-                        child: const Text("Kotlin"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                        child: const Text("My Website"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                        child: const Text(
-                          "Other",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                child: SizedBox(height: 30, child: filterTaskTypeButton()),
               )
             ],
           ),
@@ -300,10 +389,10 @@ class AddTaskScreen extends StatefulWidget {
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
-  String taskType = taskCatergorieChoice.first;
+  String taskType = taskTypeCatergories.first;
   Map<String, bool> criteriasFilledIn = {"title": false, "taskType": true, "priority": false};
   Map<String, dynamic> newTaskData = {"title": "", "description": "", "taskType": "", "priority": "", "subtasks": []};
-  Map<String, String> newSubTaskData = {"title": "", "description": ""};
+  Map<String, dynamic> newSubTaskData = {"title": "", "description": "", "completed": false};
 
   bool checkIfAllCriteriaIsFilledIn(criteriaList) {
     bool allCriteriaFilledIn = true;
@@ -327,10 +416,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 20),
-            child: Text(
-              "Title of task",
-              style: TextStyle(color: colorScheme.text),
-            ),
+            child: AppLayout.colorAdaptivText("Title of task"),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10, right: 10, bottom: 20),
@@ -361,10 +447,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           ///
           /// add description
           ///
-          Text(
-            "Description of task",
-            style: TextStyle(color: colorScheme.text),
-          ),
+          AppLayout.colorAdaptivText("Description of task"),
           Padding(
             padding: const EdgeInsets.only(left: 10, right: 10, bottom: 20),
             child: TextField(
@@ -463,7 +546,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               borderRadius: BorderRadius.circular(10),
               icon: const Icon(Icons.keyboard_arrow_down),
               padding: const EdgeInsets.all(10),
-              items: taskCatergorieChoice.map(
+              items: taskTypeCatergories.map(
                 (String value) {
                   return DropdownMenuItem(
                     value: value,
@@ -482,13 +565,19 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           ),
           Card(
             elevation: 2,
+            shape: AppLayout.cardBorder(borderRadius: 20, borderColor: colorScheme.primary, borderWidth: 3),
+            color: colorScheme.card,
             child: ListTile(
-              leading: Icon(Icons.add),
-              title: Text("add subtask"),
+              leading: Icon(
+                Icons.add,
+                color: colorScheme.text,
+              ),
+              title: AppLayout.colorAdaptivText("add subtask"),
               onTap: () {
                 showDialog(
                   context: context,
                   builder: ((context) => AlertDialog(
+                        title: AppLayout.colorAdaptivText("add a subtask"),
                         backgroundColor: colorScheme.background,
                         content: Stack(
                           children: [
@@ -521,13 +610,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                                   ),
                                   ElevatedButton.icon(
                                     onPressed: () {
-                                      setState(() {
-                                        if (newSubTaskData["title"] != "") {
-                                          newTaskData["subtasks"].add(Map<String, String>.from(newSubTaskData));
+                                      if (newSubTaskData["title"] != "") {
+                                        setState(() {
+                                          newTaskData["subtasks"].add(Map<String, dynamic>.from(newSubTaskData));
                                           newSubTaskData["title"] = "";
                                           newSubTaskData["description"] = "";
-                                        }
-                                      });
+                                        });
+                                      }
+                                      ;
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: newSubTaskData["title"] != "" ? Colors.green : Colors.red,
@@ -552,13 +642,16 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             child: ListView.builder(
               itemCount: newTaskData["subtasks"].length,
               itemBuilder: (context, index) {
-                Map<String, String> subtask = newTaskData["subtasks"][index];
+                Map<String, dynamic> subtask = newTaskData["subtasks"][index];
                 return Card(
                   color: colorScheme.card,
                   elevation: 2,
                   child: ListTile(
-                    title: Text(subtask["title"]!),
-                    subtitle: Text(subtask["description"]!),
+                    title: Text(
+                      subtask["title"]!,
+                      style: TextStyle(color: colorScheme.primary),
+                    ),
+                    subtitle: AppLayout.colorAdaptivText(subtask["description"]!),
                     trailing: IconButton(
                         onPressed: () {
                           setState(() {
@@ -574,7 +667,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => null,
+        onPressed: () {
+          if (checkIfAllCriteriaIsFilledIn(criteriasFilledIn)) {
+            setState(() {
+              toDoTasks["toDo"].add(newTaskData);
+              writeToJSONtaskSaveFile(toDoTasks);
+              Navigator.of(context).pop(true);
+            });
+          }
+        },
         backgroundColor: checkIfAllCriteriaIsFilledIn(criteriasFilledIn) ? Colors.green : Colors.red,
         child: const Icon(Icons.check),
       ),
@@ -621,7 +722,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
             title: DropdownButton(
               dropdownColor: Colors.grey[700],
               value: null,
-              hint: Text("Accent Color: $accentColor"),
+              hint: AppLayout.colorAdaptivText("Accent Color: $accentColor"),
               items: colorSchemeChoice.map(
                 (String value) {
                   return DropdownMenuItem(
@@ -668,9 +769,11 @@ class _SettingsMenuState extends State<SettingsMenu> {
               leading: Switch(
                 value: onlySearchInTitle,
                 activeColor: colorScheme.primary,
-                onChanged: (value) => setState(() {
-                  onlySearchInTitle = !onlySearchInTitle;
-                }),
+                onChanged: (value) {
+                  setState(() {
+                    onlySearchInTitle = !onlySearchInTitle;
+                  });
+                },
               ))
         ],
       ),
@@ -690,10 +793,7 @@ Widget _settingsCard({dynamic leading, dynamic title}) {
 }
 
 Widget _settingsCardTitle(String title) {
-  return Text(
-    title,
-    style: TextStyle(color: colorScheme.text),
-  );
+  return AppLayout.colorAdaptivText(title);
 }
 
 // TODO add screen for detailed info of task
