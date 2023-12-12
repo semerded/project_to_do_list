@@ -11,17 +11,17 @@ Map<String, MaterialColor> colorSchemeReference = {'Green': Colors.green, 'Red':
 
 List<String> taskTypeCatergories = ['Real Life', 'Python', 'HTML', 'Java', 'Flutter', 'C++', 'Arduino', 'JavaScript', 'Kotlin', 'My Website', 'Other'];
 Map<String, dynamic> taskTypeCatergoriesColors = {
-  taskTypeCatergories[0]: Colors.grey,
-  taskTypeCatergories[1]: Colors.lightBlue,
-  taskTypeCatergories[2]: Colors.orange,
-  taskTypeCatergories[3]: Colors.red,
-  taskTypeCatergories[4]: Colors.blue[600],
-  taskTypeCatergories[5]: Colors.purple,
-  taskTypeCatergories[6]: Colors.teal,
-  taskTypeCatergories[7]: Colors.yellow[700],
-  taskTypeCatergories[8]: Colors.green[900],
-  taskTypeCatergories[9]: Colors.green,
-  taskTypeCatergories[10]: Colors.black
+  taskTypeCatergories[0]: [Colors.grey, true],
+  taskTypeCatergories[1]: [Colors.lightBlue, false],
+  taskTypeCatergories[2]: [Colors.orange, false],
+  taskTypeCatergories[3]: [Colors.red, false],
+  taskTypeCatergories[4]: [Colors.blue[600], false],
+  taskTypeCatergories[5]: [Colors.purple, false],
+  taskTypeCatergories[6]: [Colors.teal, false],
+  taskTypeCatergories[7]: [Colors.yellow, true],
+  taskTypeCatergories[8]: [Colors.green[900], false],
+  taskTypeCatergories[9]: [Colors.green, false],
+  taskTypeCatergories[10]: [Colors.black, false]
 };
 Map<String, dynamic> taskTypesActive = {
   taskTypeCatergories[0]: true,
@@ -126,17 +126,17 @@ class AppLayout {
     );
   }
 
-  static Widget colorAdaptivText(text) {
+  static Widget colorAdaptivText(text, {double fontSize = 14, FontWeight fontWeight = FontWeight.normal}) {
     return Text(
       text,
-      style: TextStyle(color: colorScheme.text),
+      style: TextStyle(color: colorScheme.text, fontSize: fontSize, fontWeight: fontWeight),
     );
   }
 
-  static Widget primaryText(text) {
+  static Widget primaryText(text, {double fontSize = 14, FontWeight fontWeight = FontWeight.normal}) {
     return Text(
       text,
-      style: TextStyle(color: colorScheme.primary),
+      style: TextStyle(color: colorScheme.primary, fontSize: fontSize, fontWeight: fontWeight),
     );
   }
 }
@@ -222,55 +222,63 @@ class _APPState extends State<APP> {
             color: colorScheme.card,
             elevation: 2,
             child: ListTile(
-                textColor: colorScheme.text,
-                shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[toDoTaskPerIndex["priority"]])),
-                title: Text(
-                  toDoTaskPerIndex["title"].toString(),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: colorScheme.primary, fontSize: 20, fontWeight: FontWeight.bold), // TODO bold
+              textColor: colorScheme.text,
+              shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[toDoTaskPerIndex["priority"]])),
+              title: Text(
+                toDoTaskPerIndex["title"].toString(),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: colorScheme.primary, fontSize: 20, fontWeight: FontWeight.bold), // TODO bold
+              ),
+              subtitle: RichText(
+                text: TextSpan(
+                  text: "[$taskType] ",
+                  style: TextStyle(color: taskTypeCatergoriesColors[taskType][0], fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
+                  children: <TextSpan>[
+                    TextSpan(text: toDoTaskPerIndex["description"], style: TextStyle(color: colorScheme.text)),
+                  ],
                 ),
-                subtitle: RichText(
-                  text: TextSpan(
-                    text: "[$taskType] ",
-                    style: TextStyle(color: taskTypeCatergoriesColors[taskType], fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
-                    children: <TextSpan>[
-                      TextSpan(text: toDoTaskPerIndex["description"], style: TextStyle(color: colorScheme.text)),
-                    ],
+              ),
+              trailing: (() {
+                Widget taskTypeText = Text(
+                  taskType,
+                  style: TextStyle(color: taskTypeCatergoriesColors[taskType][0], fontWeight: FontWeight.bold),
+                );
+                if (currentTab == "toDo") {
+                  // return taskTypeText;
+                  return IconButton(
+                    onPressed: () => setState(() {
+                      Map<String, dynamic> task = toDoTasks["toDo"].removeAt(index);
+                      toDoTasks["inProgress"].add(task);
+                    }),
+                    icon: const Icon(Icons.arrow_forward_outlined),
+                  );
+                } else if (currentTab == "inProgress") {
+                  return CircularProgressIndicator(
+                    value: GlobalFunctions.getTaskCompletion(toDoTaskPerIndex["subtasks"]) / toDoTaskPerIndex["subtasks"].length,
+                    color: colorScheme.primary,
+                    backgroundColor: colorScheme.background,
+                  );
+                } else {
+                  return taskTypeText;
+                }
+              }()),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ShowTaskScreen(
+                    toDoTaskPerIndex: toDoTaskPerIndex,
+                    currentTab: currentTab,
+                    index: index,
                   ),
                 ),
-                trailing: (() {
-                  Widget taskTypeText = Text(
-                    taskType,
-                    style: TextStyle(color: taskTypeCatergoriesColors[taskType], fontWeight: FontWeight.bold),
-                  );
-                  if (currentTab == "toDo") {
-                    // return taskTypeText;
-                    return IconButton(
-                      onPressed: () => setState(() {
-                        Map<String, dynamic> task = toDoTasks["toDo"].removeAt(index);
-                        toDoTasks["inProgress"].add(task);
-                      }),
-                      icon: const Icon(Icons.arrow_forward_outlined),
-                    );
-                  } else if (currentTab == "inProgress") {
-                    return CircularProgressIndicator(
-                      value: GlobalFunctions.getTaskCompletion(toDoTaskPerIndex["subtasks"]) / toDoTaskPerIndex["subtasks"].length,
-                      color: colorScheme.primary,
-                      backgroundColor: colorScheme.background,
-                    );
-                  } else {
-                    return taskTypeText;
-                  }
-                }()),
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ShowTaskScreen(
-                        toDoTaskPerIndex: toDoTaskPerIndex,
-                        currentTab: currentTab,
-                        index: index,
-                      ),
-                    ))),
+              ).then((value) {
+                if (value != null && value) {
+                  setState(() {
+                    
+                  });
+                }
+              }),
+            ),
           );
         } else {
           return Container();
@@ -291,7 +299,7 @@ class _APPState extends State<APP> {
             taskTypesActive[taskTypeElement] = !taskTypesActive[taskTypeElement];
           }),
           style: ElevatedButton.styleFrom(
-              backgroundColor: taskTypeCatergoriesColors[taskTypeElement],
+              backgroundColor: taskTypeCatergoriesColors[taskTypeElement][0],
               shape: taskTypesActive[taskTypeElement]
                   ? RoundedRectangleBorder(
                       side: BorderSide(width: 5, color: colorScheme.text),
@@ -300,7 +308,10 @@ class _APPState extends State<APP> {
                       ),
                     )
                   : null),
-          child: Text(taskTypeElement),
+          child: Text(
+            taskTypeElement,
+            style: TextStyle(color: taskTypeCatergoriesColors[taskTypeElement][1] ? Colors.black : Colors.white),
+          ),
         );
       },
     );
@@ -441,13 +452,16 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
       backgroundColor: colorScheme.background,
       appBar: AppBar(
         backgroundColor: colorScheme.primary,
-        title: Text(widget.toDoTaskPerIndex["title"], overflow: TextOverflow.ellipsis,), // TODO give data with navigator call
+        title: Text(
+          widget.toDoTaskPerIndex["title"],
+          overflow: TextOverflow.ellipsis,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(true),
         ),
       ),
-      body: Column(children: [
+      body: ListView(children: [
         SliderTheme(
           data: SliderThemeData(trackHeight: 30, thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16, elevation: 5), activeTrackColor: Colors.green, inactiveTrackColor: colorScheme.card, thumbColor: colorScheme.primary),
           child: AbsorbPointer(
@@ -459,8 +473,11 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
             ),
           ),
         ),
-        AppLayout.primaryText(widget.toDoTaskPerIndex["title"]),
-        AppLayout.colorAdaptivText(widget.toDoTaskPerIndex["description"]),
+        AppLayout.primaryText(widget.toDoTaskPerIndex["title"], fontSize: 32, fontWeight: FontWeight.bold),
+        SizedBox(
+          height: 50,
+        ),
+        AppLayout.colorAdaptivText(widget.toDoTaskPerIndex["description"], fontSize: 18),
         SizedBox(
           height: 400,
           width: 1000,
