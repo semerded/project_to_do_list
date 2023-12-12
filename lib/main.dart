@@ -132,15 +132,35 @@ class AppLayout {
       style: TextStyle(color: colorScheme.text),
     );
   }
+
+  static Widget primaryText(text) {
+    return Text(
+      text,
+      style: TextStyle(color: colorScheme.primary),
+    );
+  }
 }
 
-class Data {
+class GlobalFunctions {
   // TODO change name
   static String checkIfTaskTypeIsValid(taskTypeOfTask) {
     if (taskTypeCatergories.contains(taskTypeOfTask)) {
       return taskTypeOfTask;
     }
     return "Other";
+  }
+
+  static double getTaskCompletion(List<dynamic> subtaskList) {
+    if (subtaskList.isEmpty) {
+      return 0.0;
+    }
+    double completedTaskCounter = 0;
+    for (Map<String, dynamic> subTask in subtaskList) {
+      if (subTask["completed"]) {
+        completedTaskCounter++;
+      }
+    }
+    return completedTaskCounter;
   }
 }
 
@@ -155,6 +175,10 @@ void main() {
   ));
 }
 
+//////////////////////////
+// homepage (task page) //
+//////////////////////////
+
 class APP extends StatefulWidget {
   const APP({super.key});
 
@@ -162,9 +186,6 @@ class APP extends StatefulWidget {
   State<APP> createState() => _APPState();
 }
 
-//////////////////////////
-// homepage (task page) //
-//////////////////////////
 class _APPState extends State<APP> {
   @override
   void initState() {
@@ -183,9 +204,9 @@ class _APPState extends State<APP> {
     if (!onlySearchInTitle && taskData["description"].contains(filteredTasksBySearch)) {
       return true;
     }
-    if (taskTypesActive[taskData["taskType"]]) {
-      return true;
-    }
+    // if (taskTypesActive[taskData["taskType"]]) {
+    //   return true;
+    // }
     return false;
   }
 
@@ -195,39 +216,61 @@ class _APPState extends State<APP> {
       itemCount: toDoTasksPerCategoryOfCompletion.length,
       itemBuilder: (context, index) {
         Map<String, dynamic> toDoTaskPerIndex = toDoTasksPerCategoryOfCompletion[index];
-        String taskType = Data.checkIfTaskTypeIsValid(toDoTaskPerIndex["taskType"].toString());
+        String taskType = GlobalFunctions.checkIfTaskTypeIsValid(toDoTaskPerIndex["taskType"].toString());
         if (checkIfTaskIsNotFilteredOut(toDoTaskPerIndex)) {
           return Card(
             color: colorScheme.card,
             elevation: 2,
             child: ListTile(
-              textColor: colorScheme.text,
-              shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[toDoTaskPerIndex["priority"]])),
-              title: Text(
-                toDoTaskPerIndex["title"].toString(),
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: colorScheme.primary, fontSize: 20, fontWeight: FontWeight.bold), // TODO bold
-              ),
-              subtitle: Text(
-                toDoTaskPerIndex["description"],
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: Text(
-                taskType,
-                style: TextStyle(color: taskTypeCatergoriesColors[taskType], fontWeight: FontWeight.bold),
-              ),
-              onTap: () => showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text(toDoTaskPerIndex["title"]),
-                  titleTextStyle: TextStyle(color: colorScheme.primary),
-                  backgroundColor: colorScheme.background,
-                  content: Stack(
-                    children: [AppLayout.colorAdaptivText(toDoTaskPerIndex["description"])],
+                textColor: colorScheme.text,
+                shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[toDoTaskPerIndex["priority"]])),
+                title: Text(
+                  toDoTaskPerIndex["title"].toString(),
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: colorScheme.primary, fontSize: 20, fontWeight: FontWeight.bold), // TODO bold
+                ),
+                subtitle: RichText(
+                  text: TextSpan(
+                    text: "[$taskType] ",
+                    style: TextStyle(color: taskTypeCatergoriesColors[taskType], fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
+                    children: <TextSpan>[
+                      TextSpan(text: toDoTaskPerIndex["description"], style: TextStyle(color: colorScheme.text)),
+                    ],
                   ),
                 ),
-              ),
-            ),
+                trailing: (() {
+                  Widget taskTypeText = Text(
+                    taskType,
+                    style: TextStyle(color: taskTypeCatergoriesColors[taskType], fontWeight: FontWeight.bold),
+                  );
+                  if (currentTab == "toDo") {
+                    // return taskTypeText;
+                    return IconButton(
+                      onPressed: () => setState(() {
+                        Map<String, dynamic> task = toDoTasks["toDo"].removeAt(index);
+                        toDoTasks["inProgress"].add(task);
+                      }),
+                      icon: const Icon(Icons.arrow_forward_outlined),
+                    );
+                  } else if (currentTab == "inProgress") {
+                    return CircularProgressIndicator(
+                      value: GlobalFunctions.getTaskCompletion(toDoTaskPerIndex["subtasks"]) / toDoTaskPerIndex["subtasks"].length,
+                      color: colorScheme.primary,
+                      backgroundColor: colorScheme.background,
+                    );
+                  } else {
+                    return taskTypeText;
+                  }
+                }()),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShowTaskScreen(
+                        toDoTaskPerIndex: toDoTaskPerIndex,
+                        currentTab: currentTab,
+                        index: index,
+                      ),
+                    ))),
           );
         } else {
           return Container();
@@ -248,14 +291,15 @@ class _APPState extends State<APP> {
             taskTypesActive[taskTypeElement] = !taskTypesActive[taskTypeElement];
           }),
           style: ElevatedButton.styleFrom(
-            backgroundColor: taskTypeCatergoriesColors[taskTypeElement],
-            shape: taskTypesActive[taskTypeElement] ?  RoundedRectangleBorder(
-              side: BorderSide(width: 5, color: colorScheme.text),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(5),
-              ),
-            ) : null
-          ),
+              backgroundColor: taskTypeCatergoriesColors[taskTypeElement],
+              shape: taskTypesActive[taskTypeElement]
+                  ? RoundedRectangleBorder(
+                      side: BorderSide(width: 5, color: colorScheme.text),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(5),
+                      ),
+                    )
+                  : null),
           child: Text(taskTypeElement),
         );
       },
@@ -278,7 +322,7 @@ class _APPState extends State<APP> {
               child: Text("The Project To Do List"),
             ),
             bottom: const TabBar(
-              tabs: [Text("To Do"), Text("In Progress"), Text("Done")],
+              tabs: [Text("To Do"), Text("In Progress"), Text("Completed")],
             ),
             actions: [
               IconButton(
@@ -380,6 +424,109 @@ class _APPState extends State<APP> {
   }
 }
 
+class ShowTaskScreen extends StatefulWidget {
+  final Map<String, dynamic> toDoTaskPerIndex;
+  final String currentTab;
+  final int index;
+  const ShowTaskScreen({super.key, required this.toDoTaskPerIndex, required this.currentTab, required this.index});
+
+  @override
+  State<ShowTaskScreen> createState() => _ShowTaskScreenState();
+}
+
+class _ShowTaskScreenState extends State<ShowTaskScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: colorScheme.primary,
+        title: Text(widget.toDoTaskPerIndex["title"], overflow: TextOverflow.ellipsis,), // TODO give data with navigator call
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Column(children: [
+        SliderTheme(
+          data: SliderThemeData(trackHeight: 30, thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16, elevation: 5), activeTrackColor: Colors.green, inactiveTrackColor: colorScheme.card, thumbColor: colorScheme.primary),
+          child: AbsorbPointer(
+            child: Slider(
+              value: GlobalFunctions.getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]),
+              min: 0,
+              max: widget.toDoTaskPerIndex["subtasks"].length.toDouble(),
+              onChanged: (value) => value,
+            ),
+          ),
+        ),
+        AppLayout.primaryText(widget.toDoTaskPerIndex["title"]),
+        AppLayout.colorAdaptivText(widget.toDoTaskPerIndex["description"]),
+        SizedBox(
+          height: 400,
+          width: 1000,
+          ///////////////////////
+          // subtask displayer //
+          ///////////////////////
+
+          child: Column(
+            children: [
+              Card(
+                elevation: 2,
+                shape: AppLayout.cardBorder(borderRadius: 20, borderColor: colorScheme.primary, borderWidth: 3),
+                color: colorScheme.card,
+                child: ListTile(
+                  leading: Icon(
+                    Icons.add,
+                    color: colorScheme.text,
+                  ),
+                  title: AppLayout.colorAdaptivText("add subtask"),
+                  onTap: () {},
+                ),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: widget.toDoTaskPerIndex["subtasks"].length,
+                itemBuilder: (context, subIndex) {
+                  Map<String, dynamic> subTask = widget.toDoTaskPerIndex["subtasks"][subIndex];
+                  bool subTaskCompleted = subTask["completed"];
+                  return Card(
+                    color: colorScheme.card,
+                    elevation: 2,
+                    child: ListTile(
+                      title: AppLayout.colorAdaptivText(subTask["title"]),
+                      subtitle: AppLayout.colorAdaptivText(subTask["description"]),
+                      shape: subTaskCompleted ? const RoundedRectangleBorder(side: BorderSide(width: 2, color: Colors.green), borderRadius: BorderRadius.all(Radius.circular(5))) : null,
+                      trailing: FloatingActionButton(
+                        onPressed: () {
+                          setState(() {
+                            subTaskCompleted = !subTaskCompleted;
+                            toDoTasks[widget.currentTab][widget.index]["subtasks"][subIndex]["completed"] = subTaskCompleted;
+                          });
+                        },
+                        backgroundColor: subTaskCompleted ? Colors.blue : Colors.green,
+                        child: subTaskCompleted ? const Icon(Icons.remove_done) : const Icon(Icons.done_all),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        ElevatedButton.icon(
+          onPressed: () => null,
+          icon: const Icon(Icons.check),
+          label: const Text("Complete task"),
+          style: ElevatedButton.styleFrom(backgroundColor: GlobalFunctions.getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length ? Colors.green : Colors.red),
+        )
+      ]),
+    );
+  }
+}
+
+/////////////////////
+// add task screen //
+/////////////////////
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
 
@@ -389,7 +536,7 @@ class AddTaskScreen extends StatefulWidget {
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
-  String taskType = taskTypeCatergories.first;
+  String taskType = taskTypeCatergories[0];
   Map<String, bool> criteriasFilledIn = {"title": false, "taskType": true, "priority": false};
   Map<String, dynamic> newTaskData = {"title": "", "description": "", "taskType": "", "priority": "", "subtasks": []};
   Map<String, dynamic> newSubTaskData = {"title": "", "description": "", "completed": false};
@@ -529,7 +676,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
-                      shape: newTaskData["priority"] == "high" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,
+                      shape: newTaskData["priority"] == "high"
+                          ? RoundedRectangleBorder(
+                              side: const BorderSide(width: 3, color: Colors.white),
+                              borderRadius: BorderRadius.circular(5),
+                            )
+                          : null,
                     ),
                     child: const Text("High"),
                   ),
@@ -617,7 +769,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                                           newSubTaskData["description"] = "";
                                         });
                                       }
-                                      ;
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: newSubTaskData["title"] != "" ? Colors.green : Colors.red,
@@ -706,7 +857,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
         leading: IconButton(
           // TODO laat het werken voor telefoon back button
           onPressed: () {
-            Navigator.of(context).pop(true);
+            Navigator.of(context).pop(false);
           },
           icon: const Icon(Icons.arrow_back),
         ),
@@ -776,6 +927,11 @@ class _SettingsMenuState extends State<SettingsMenu> {
                 },
               ))
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.of(context).pop(true),
+        backgroundColor: colorScheme.primary,
+        child: const Icon(Icons.save),
       ),
     );
   }
