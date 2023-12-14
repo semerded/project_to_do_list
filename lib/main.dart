@@ -48,6 +48,8 @@ bool showProgrammingColor = userPresets["showProgrammingColor"];
 bool darkMode = userPresets["darkMode"];
 bool onlySearchInTitle = userPresets["onlySearchInTitle"];
 
+enum Priority { high, medium, low, none }
+
 // Future<dynamic> write() async {
 //   final String jsonString = await rootBundle.loadString(jsonFilePath);
 //   return jsonEncode(jsonString);
@@ -554,16 +556,15 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                     color: colorScheme.card,
                     elevation: 2,
                     child: ListTile(
+                      onTap: () => setState(() {
+                        subTaskCompleted = !subTaskCompleted;
+                        widget.toDoTaskPerIndex["subtasks"][subIndex]["completed"] = subTaskCompleted;
+                      }),
                       title: AppLayout.colorAdaptivText(subTask["title"]),
                       subtitle: AppLayout.colorAdaptivText(subTask["description"]),
                       shape: subTaskCompleted ? const RoundedRectangleBorder(side: BorderSide(width: 2, color: Colors.green), borderRadius: BorderRadius.all(Radius.circular(5))) : null,
                       trailing: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            subTaskCompleted = !subTaskCompleted;
-                            widget.toDoTaskPerIndex["subtasks"][subIndex]["completed"] = subTaskCompleted;
-                          });
-                        },
+                        onPressed: () {},
                         style: IconButton.styleFrom(backgroundColor: subTaskCompleted ? Colors.blue : Colors.green),
                         icon: subTaskCompleted ? const Icon(Icons.remove_done) : const Icon(Icons.done_all),
                       ),
@@ -576,35 +577,35 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
         ],
       ),
       bottomNavigationBar: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // discard changes
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop([false, unchangedCopyOfCurrentTask]);
-            },
-            icon: const Icon(Icons.arrow_back),
-            label: Text(isTaskChanged() ? "Discard Changes" : "Go Back"),
-            style: ElevatedButton.styleFrom(backgroundColor: isTaskChanged() ? Colors.red : Colors.blue),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop([false, unchangedCopyOfCurrentTask]);
+              },
+              icon: const Icon(Icons.arrow_back),
+              label: Text(isTaskChanged() ? "Discard Changes" : "Go Back"),
+              style: ElevatedButton.styleFrom(backgroundColor: isTaskChanged() ? Colors.red : Colors.blue),
+            ),
           ),
-          const Spacer(),
 
           // update changes
-          ElevatedButton.icon(
-            onPressed: () => Navigator.of(context).pop([false, widget.toDoTaskPerIndex]),
-            icon: const Icon(Icons.save),
-            label: const Text("Save Changes"),
-            style: ElevatedButton.styleFrom(backgroundColor: isTaskChanged() ? Colors.green : Colors.grey),
-          ),
-          const Spacer(),
-
-          // complete task
-          ElevatedButton.icon(
-            onPressed: () => Navigator.of(context).pop([true, widget.toDoTaskPerIndex]),
-            icon: const Icon(Icons.check),
-            label: const Text("Complete task"),
-            style: ElevatedButton.styleFrom(backgroundColor: GlobalFunctions.getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length ? Colors.green : Colors.grey),
-          ),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).pop([true, widget.toDoTaskPerIndex]),
+              icon: const Icon(Icons.check),
+              label: const Text("Complete task"),
+              style: ElevatedButton.styleFrom(backgroundColor: GlobalFunctions.getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length ? Colors.green : Colors.grey),
+            ),
+          )
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.of(context).pop([false, widget.toDoTaskPerIndex]),
+        backgroundColor: isTaskChanged() ? Colors.green : Colors.grey,
+        child: const Icon(Icons.save),
       ),
     );
   }
@@ -955,6 +956,17 @@ class _SettingsMenuState extends State<SettingsMenu> {
                 onChanged: (value) {
                   setState(() {
                     onlySearchInTitle = !onlySearchInTitle;
+                  });
+                },
+              )),
+          _settingsCard(
+              title: _settingsCardTitle("Auto Move Task To In Progress"),
+              leading: Switch(
+                value: false,
+                activeColor: colorScheme.primary,
+                onChanged: (value) {
+                  setState(() {
+                    // onlySearchInTitle = !onlySearchInTitle;
                   });
                 },
               ))
