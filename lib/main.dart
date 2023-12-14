@@ -2,15 +2,17 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:deepcopy/deepcopy.dart';
+import 'package:collection/collection.dart';
 
 const String jsonFilePath = "assets/toDoSaveFile.json";
 
-Map<String, dynamic> toDoTasks = {};
+Map toDoTasks = {};
 List<String> colorSchemeChoice = ['Green', 'Red', 'Blue', 'Orange', 'Purple'];
 Map<String, MaterialColor> colorSchemeReference = {'Green': Colors.green, 'Red': Colors.red, 'Blue': Colors.blue, 'Orange': Colors.orange, 'Purple': Colors.purple};
 
 List<String> taskTypeCatergories = ['Real Life', 'Python', 'HTML', 'Java', 'Flutter', 'C++', 'Arduino', 'JavaScript', 'Kotlin', 'My Website', 'Other'];
-Map<String, dynamic> taskTypeCatergoriesColors = {
+Map taskTypeCatergoriesColors = {
   taskTypeCatergories[0]: [Colors.grey, true],
   taskTypeCatergories[1]: [Colors.lightBlue, false],
   taskTypeCatergories[2]: [Colors.orange, false],
@@ -23,7 +25,7 @@ Map<String, dynamic> taskTypeCatergoriesColors = {
   taskTypeCatergories[9]: [Colors.green, false],
   taskTypeCatergories[10]: [Colors.black, false]
 };
-Map<String, dynamic> taskTypesActive = {
+Map taskTypesActive = {
   taskTypeCatergories[0]: true,
   taskTypeCatergories[1]: true,
   taskTypeCatergories[2]: true,
@@ -37,9 +39,9 @@ Map<String, dynamic> taskTypesActive = {
   taskTypeCatergories[10]: true,
 };
 
-Map<String, dynamic> taskPriorityColors = {'none': colorScheme.text, 'low': Colors.green, 'medium': Colors.yellow, 'high': Colors.red};
+Map taskPriorityColors = {'none': colorScheme.text, 'low': Colors.green, 'medium': Colors.yellow, 'high': Colors.red};
 
-Map<String, dynamic> userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false};
+Map userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false};
 
 String accentColor = userPresets["colorSchemeChoice"]; // TODO make json with app settings and add save color scheme in there
 bool showProgrammingColor = userPresets["showProgrammingColor"];
@@ -64,7 +66,7 @@ Future<File> writeToJSONtaskSaveFile(jsonDataAsJsonObject) async {
   return file.writeAsString(jsonEncode(jsonDataAsJsonObject));
 }
 
-Future<Map<String, dynamic>> readToDoTasksFromJSONtaskSaveFile() async {
+Future<Map> readToDoTasksFromJSONtaskSaveFile() async {
   try {
     final file = await _localPath;
 
@@ -155,7 +157,7 @@ class GlobalFunctions {
       return 0.0;
     }
     double completedTaskCounter = 0;
-    for (Map<String, dynamic> subTask in subtaskList) {
+    for (Map subTask in subtaskList) {
       if (subTask["completed"]) {
         completedTaskCounter++;
       }
@@ -190,14 +192,14 @@ class _APPState extends State<APP> {
   @override
   void initState() {
     super.initState();
-    readToDoTasksFromJSONtaskSaveFile().then((Map<String, dynamic> value) {
+    readToDoTasksFromJSONtaskSaveFile().then((Map value) {
       setState(() {
         toDoTasks = value;
       });
     });
   }
 
-  bool checkIfTaskIsNotFilteredOut(Map<String, dynamic> taskData) {
+  bool checkIfTaskIsNotFilteredOut(Map taskData) {
     if (taskData["title"].contains(filteredTasksBySearch)) {
       return true;
     }
@@ -215,7 +217,7 @@ class _APPState extends State<APP> {
     return ListView.builder(
       itemCount: toDoTasksPerCategoryOfCompletion.length,
       itemBuilder: (context, index) {
-        Map<String, dynamic> toDoTaskPerIndex = toDoTasksPerCategoryOfCompletion[index];
+        Map toDoTaskPerIndex = toDoTasksPerCategoryOfCompletion[index];
         String taskType = GlobalFunctions.checkIfTaskTypeIsValid(toDoTaskPerIndex["taskType"].toString());
         if (checkIfTaskIsNotFilteredOut(toDoTaskPerIndex)) {
           return Card(
@@ -247,7 +249,7 @@ class _APPState extends State<APP> {
                   // return taskTypeText;
                   return IconButton(
                     onPressed: () => setState(() {
-                      Map<String, dynamic> task = toDoTasks["toDo"].removeAt(index);
+                      Map task = toDoTasks["toDo"].removeAt(index);
                       toDoTasks["inProgress"].add(task);
                     }),
                     icon: const Icon(Icons.arrow_forward_outlined),
@@ -272,9 +274,14 @@ class _APPState extends State<APP> {
                   ),
                 ),
               ).then((value) {
-                if (value != null && value) {
+                if (value != null) {
                   setState(() {
-                    
+                    if (value[0]) {
+                      toDoTasks["completed"].add(value[1]);
+                      toDoTasks[currentTab].removeAt(index);
+                    } else {
+                      toDoTasks[currentTab][index] = value[1];
+                    }
                   });
                 }
               }),
@@ -398,7 +405,7 @@ class _APPState extends State<APP> {
                 (value) {
                   if (value != null && value) {
                     setState(() {
-                      readToDoTasksFromJSONtaskSaveFile().then((Map<String, dynamic> value) {
+                      readToDoTasksFromJSONtaskSaveFile().then((Map value) {
                         setState(() {
                           toDoTasks = value;
                         });
@@ -436,7 +443,7 @@ class _APPState extends State<APP> {
 }
 
 class ShowTaskScreen extends StatefulWidget {
-  final Map<String, dynamic> toDoTaskPerIndex;
+  final Map toDoTaskPerIndex;
   final String currentTab;
   final int index;
   const ShowTaskScreen({super.key, required this.toDoTaskPerIndex, required this.currentTab, required this.index});
@@ -446,6 +453,21 @@ class ShowTaskScreen extends StatefulWidget {
 }
 
 class _ShowTaskScreenState extends State<ShowTaskScreen> {
+  Map unchangedCopyOfCurrentTask = {}; //  not possible with deepcopy
+
+  bool isTaskChanged() {
+    if (const DeepCollectionEquality().equals(unchangedCopyOfCurrentTask, widget.toDoTaskPerIndex)) {
+      return false; // false because task has not changed
+    }
+    return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    unchangedCopyOfCurrentTask = widget.toDoTaskPerIndex.deepcopy();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -460,32 +482,48 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(true),
         ),
+        actions: [
+          IconButton(
+            onPressed: () => null,
+            icon: const Icon(Icons.delete_forever),
+          )
+        ],
       ),
-      body: ListView(children: [
-        SliderTheme(
-          data: SliderThemeData(trackHeight: 30, thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16, elevation: 5), activeTrackColor: Colors.green, inactiveTrackColor: colorScheme.card, thumbColor: colorScheme.primary),
-          child: AbsorbPointer(
-            child: Slider(
-              value: GlobalFunctions.getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]),
-              min: 0,
-              max: widget.toDoTaskPerIndex["subtasks"].length.toDouble(),
-              onChanged: (value) => value,
+      body: ListView(
+        children: [
+          SliderTheme(
+            data: SliderThemeData(
+              trackHeight: 30,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16, elevation: 5),
+              activeTrackColor: Colors.green,
+              inactiveTrackColor: Colors.grey[600],
+              thumbColor: colorScheme.primary,
+            ),
+            child: AbsorbPointer(
+              child: Slider(
+                value: GlobalFunctions.getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]),
+                min: 0,
+                max: widget.toDoTaskPerIndex["subtasks"].length.toDouble(),
+                onChanged: (value) => value,
+              ),
             ),
           ),
-        ),
-        AppLayout.primaryText(widget.toDoTaskPerIndex["title"], fontSize: 32, fontWeight: FontWeight.bold),
-        SizedBox(
-          height: 50,
-        ),
-        AppLayout.colorAdaptivText(widget.toDoTaskPerIndex["description"], fontSize: 18),
-        SizedBox(
-          height: 400,
-          width: 1000,
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: AppLayout.primaryText(widget.toDoTaskPerIndex["title"], fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+          ),
+          dividingLine(colorScheme.primary),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: AppLayout.colorAdaptivText(widget.toDoTaskPerIndex["description"], fontSize: 18),
+          ),
+
           ///////////////////////
           // subtask displayer //
           ///////////////////////
-
-          child: Column(
+          Column(
             children: [
               Card(
                 elevation: 2,
@@ -497,14 +535,20 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                     color: colorScheme.text,
                   ),
                   title: AppLayout.colorAdaptivText("add subtask"),
-                  onTap: () {},
+                  onTap: () {
+                    subTaskDialog(widget.toDoTaskPerIndex, context).then((value) {
+                      if (value != null && value) {
+                        setState(() {});
+                      }
+                    });
+                  },
                 ),
               ),
               ListView.builder(
                 shrinkWrap: true,
                 itemCount: widget.toDoTaskPerIndex["subtasks"].length,
                 itemBuilder: (context, subIndex) {
-                  Map<String, dynamic> subTask = widget.toDoTaskPerIndex["subtasks"][subIndex];
+                  Map subTask = widget.toDoTaskPerIndex["subtasks"][subIndex];
                   bool subTaskCompleted = subTask["completed"];
                   return Card(
                     color: colorScheme.card,
@@ -513,15 +557,15 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                       title: AppLayout.colorAdaptivText(subTask["title"]),
                       subtitle: AppLayout.colorAdaptivText(subTask["description"]),
                       shape: subTaskCompleted ? const RoundedRectangleBorder(side: BorderSide(width: 2, color: Colors.green), borderRadius: BorderRadius.all(Radius.circular(5))) : null,
-                      trailing: FloatingActionButton(
+                      trailing: IconButton(
                         onPressed: () {
                           setState(() {
                             subTaskCompleted = !subTaskCompleted;
-                            toDoTasks[widget.currentTab][widget.index]["subtasks"][subIndex]["completed"] = subTaskCompleted;
+                            widget.toDoTaskPerIndex["subtasks"][subIndex]["completed"] = subTaskCompleted;
                           });
                         },
-                        backgroundColor: subTaskCompleted ? Colors.blue : Colors.green,
-                        child: subTaskCompleted ? const Icon(Icons.remove_done) : const Icon(Icons.done_all),
+                        style: IconButton.styleFrom(backgroundColor: subTaskCompleted ? Colors.blue : Colors.green),
+                        icon: subTaskCompleted ? const Icon(Icons.remove_done) : const Icon(Icons.done_all),
                       ),
                     ),
                   );
@@ -529,14 +573,39 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
               ),
             ],
           ),
-        ),
-        ElevatedButton.icon(
-          onPressed: () => null,
-          icon: const Icon(Icons.check),
-          label: const Text("Complete task"),
-          style: ElevatedButton.styleFrom(backgroundColor: GlobalFunctions.getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length ? Colors.green : Colors.red),
-        )
-      ]),
+        ],
+      ),
+      bottomNavigationBar: Row(
+        children: [
+          // discard changes
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop([false, unchangedCopyOfCurrentTask]);
+            },
+            icon: const Icon(Icons.arrow_back),
+            label: Text(isTaskChanged() ? "Discard Changes" : "Go Back"),
+            style: ElevatedButton.styleFrom(backgroundColor: isTaskChanged() ? Colors.red : Colors.blue),
+          ),
+          const Spacer(),
+
+          // update changes
+          ElevatedButton.icon(
+            onPressed: () => Navigator.of(context).pop([false, widget.toDoTaskPerIndex]),
+            icon: const Icon(Icons.save),
+            label: const Text("Save Changes"),
+            style: ElevatedButton.styleFrom(backgroundColor: isTaskChanged() ? Colors.green : Colors.grey),
+          ),
+          const Spacer(),
+
+          // complete task
+          ElevatedButton.icon(
+            onPressed: () => Navigator.of(context).pop([true, widget.toDoTaskPerIndex]),
+            icon: const Icon(Icons.check),
+            label: const Text("Complete task"),
+            style: ElevatedButton.styleFrom(backgroundColor: GlobalFunctions.getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length ? Colors.green : Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -555,8 +624,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
   String taskType = taskTypeCatergories[0];
   Map<String, bool> criteriasFilledIn = {"title": false, "taskType": true, "priority": false};
-  Map<String, dynamic> newTaskData = {"title": "", "description": "", "taskType": "", "priority": "", "subtasks": []};
-  Map<String, dynamic> newSubTaskData = {"title": "", "description": "", "completed": false};
+  Map newTaskData = {"title": "", "description": "", "taskType": "", "priority": "", "subtasks": []};
 
   bool checkIfAllCriteriaIsFilledIn(criteriaList) {
     bool allCriteriaFilledIn = true;
@@ -743,65 +811,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               ),
               title: AppLayout.colorAdaptivText("add subtask"),
               onTap: () {
-                showDialog(
-                  context: context,
-                  builder: ((context) => AlertDialog(
-                        title: AppLayout.colorAdaptivText("add a subtask"),
-                        backgroundColor: colorScheme.background,
-                        content: Stack(
-                          children: [
-                            Form(
-                              child: Column(
-                                children: [
-                                  TextField(
-                                    decoration: InputDecoration(
-                                      enabledBorder: AppLayout.inactiveBorder(),
-                                      focusedBorder: AppLayout.activeBorder(),
-                                      hintText: "Title for sub-task",
-                                      hintStyle: TextStyle(color: colorScheme.text),
-                                    ),
-                                    style: TextStyle(color: colorScheme.text),
-                                    cursorColor: colorScheme.primary,
-                                    onChanged: (value) => setState(() {
-                                      newSubTaskData["title"] = value;
-                                    }),
-                                  ),
-                                  TextField(
-                                    decoration: InputDecoration(
-                                      enabledBorder: AppLayout.inactiveBorder(),
-                                      focusedBorder: AppLayout.activeBorder(),
-                                      hintText: "Description for sub-task",
-                                      hintStyle: TextStyle(color: colorScheme.text),
-                                    ),
-                                    style: TextStyle(color: colorScheme.text),
-                                    cursorColor: colorScheme.primary,
-                                    onChanged: (value) => newSubTaskData["description"] = value,
-                                  ),
-                                  ElevatedButton.icon(
-                                    onPressed: () {
-                                      if (newSubTaskData["title"] != "") {
-                                        setState(() {
-                                          newTaskData["subtasks"].add(Map<String, dynamic>.from(newSubTaskData));
-                                          newSubTaskData["title"] = "";
-                                          newSubTaskData["description"] = "";
-                                        });
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: newSubTaskData["title"] != "" ? Colors.green : Colors.red,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(26),
-                                      ),
-                                    ),
-                                    label: const Text("Add sub-task"),
-                                    icon: const Icon(Icons.add),
-                                  )
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
-                      )),
+                subTaskDialog(newTaskData, context).then(
+                  (value) {
+                    if (value != null && value) {
+                      setState(() {});
+                    }
+                  },
                 );
               },
             ),
@@ -810,7 +825,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             child: ListView.builder(
               itemCount: newTaskData["subtasks"].length,
               itemBuilder: (context, index) {
-                Map<String, dynamic> subtask = newTaskData["subtasks"][index];
+                Map subtask = newTaskData["subtasks"][index];
                 return Card(
                   color: colorScheme.card,
                   elevation: 2,
@@ -969,4 +984,79 @@ Widget _settingsCardTitle(String title) {
   return AppLayout.colorAdaptivText(title);
 }
 
-// TODO add screen for detailed info of task
+Future subTaskDialog(Map task, context) {
+  Map newSubTaskData = {"title": "", "description": "", "completed": false};
+
+  return showDialog(
+    context: context,
+    builder: ((context) => StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: AppLayout.colorAdaptivText("add a subtask"),
+              backgroundColor: colorScheme.background,
+              content: Stack(
+                children: [
+                  Form(
+                    child: Column(
+                      children: [
+                        TextField(
+                          decoration: InputDecoration(
+                            enabledBorder: AppLayout.inactiveBorder(),
+                            focusedBorder: AppLayout.activeBorder(),
+                            hintText: "Title for sub-task",
+                            hintStyle: TextStyle(color: colorScheme.text),
+                          ),
+                          style: TextStyle(color: colorScheme.text),
+                          cursorColor: colorScheme.primary,
+                          onChanged: (value) => setState(() {
+                            newSubTaskData["title"] = value;
+                          }),
+                        ),
+                        TextField(
+                          decoration: InputDecoration(
+                            enabledBorder: AppLayout.inactiveBorder(),
+                            focusedBorder: AppLayout.activeBorder(),
+                            hintText: "Description for sub-task",
+                            hintStyle: TextStyle(color: colorScheme.text),
+                          ),
+                          style: TextStyle(color: colorScheme.text),
+                          cursorColor: colorScheme.primary,
+                          onChanged: (value) => newSubTaskData["description"] = value,
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            if (newSubTaskData["title"] != "") {
+                              setState(() {
+                                task["subtasks"].add(Map.from(newSubTaskData));
+                                newSubTaskData["title"] = "";
+                                newSubTaskData["description"] = "";
+                                Navigator.of(context, rootNavigator: true).pop(true);
+                              });
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: newSubTaskData["title"] != "" ? Colors.green : Colors.red,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(26),
+                            ),
+                          ),
+                          label: const Text("Add sub-task"),
+                          icon: const Icon(Icons.add),
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        )),
+  );
+}
+
+Widget dividingLine(color, {double height = 10}) {
+  return Padding(
+    padding: const EdgeInsets.all(10),
+    child: Container(height: height, color: color),
+  );
+}

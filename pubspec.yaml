@@ -14,10 +14,9 @@ dependencies:
   flutter:
     sdk: flutter
   path_provider:
-    
-
-
   cupertino_icons: ^1.0.2
+  deepcopy: ^1.1.2
+
 
 dev_dependencies:
   flutter_test:
