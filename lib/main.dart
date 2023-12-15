@@ -39,7 +39,7 @@ Map taskTypesActive = {
   taskTypeCatergories[10]: true,
 };
 
-Map taskPriorityColors = {'none': colorScheme.text, 'low': Colors.green, 'medium': Colors.yellow, 'high': Colors.red};
+Map taskPriorityColors = {Priority.none.index: Colors.grey, Priority.low.index: Colors.green, Priority.medium.index: Colors.yellow, Priority.high.index: Colors.red};
 
 Map userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false};
 
@@ -49,11 +49,6 @@ bool darkMode = userPresets["darkMode"];
 bool onlySearchInTitle = userPresets["onlySearchInTitle"];
 
 enum Priority { high, medium, low, none }
-
-// Future<dynamic> write() async {
-//   final String jsonString = await rootBundle.loadString(jsonFilePath);
-//   return jsonEncode(jsonString);
-// }
 
 Future<File> get _localPath async {
   final directory = await getApplicationDocumentsDirectory();
@@ -71,7 +66,6 @@ Future<File> writeToJSONtaskSaveFile(jsonDataAsJsonObject) async {
 Future<Map> readToDoTasksFromJSONtaskSaveFile() async {
   try {
     final file = await _localPath;
-
     // Read the file
     final contents = await file.readAsString();
     return jsonDecode(contents);
@@ -215,6 +209,7 @@ class _APPState extends State<APP> {
   }
 
   Widget placeToDoTasks(currentTab) {
+    try {
     List<dynamic> toDoTasksPerCategoryOfCompletion = toDoTasks[currentTab];
     return ListView.builder(
       itemCount: toDoTasksPerCategoryOfCompletion.length,
@@ -231,7 +226,7 @@ class _APPState extends State<APP> {
               title: Text(
                 toDoTaskPerIndex["title"].toString(),
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: colorScheme.primary, fontSize: 20, fontWeight: FontWeight.bold), // TODO bold
+                style: TextStyle(color: colorScheme.primary, fontSize: 20, fontWeight: FontWeight.bold),
               ),
               subtitle: RichText(
                 text: TextSpan(
@@ -294,6 +289,9 @@ class _APPState extends State<APP> {
         }
       },
     );
+    } catch (error) {
+      return Container();
+    }
   }
 
   Widget filterTaskTypeButton() {
@@ -538,9 +536,11 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                   ),
                   title: AppLayout.colorAdaptivText("add subtask"),
                   onTap: () {
-                    subTaskDialog(widget.toDoTaskPerIndex, context).then((value) {
+                    subTaskDialog(context).then((value) {
                       if (value != null && value) {
-                        setState(() {});
+                        setState(() {
+                          widget.toDoTaskPerIndex["subtasks"].add(value);
+                        });
                       }
                     });
                   },
@@ -637,6 +637,31 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     return allCriteriaFilledIn;
   }
 
+  Widget priorityButton(Priority priorityLevel) {
+    return Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        newTaskData["priority"] = priorityLevel.index;
+                        criteriasFilledIn["priority"] = true;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: taskPriorityColors[priorityLevel.index],
+                      shape: newTaskData["priority"] == priorityLevel.index ? priorityBorder() : null,
+                    ),
+                    child: Text(priorityLevel.name),
+                  ),
+                );
+  }
+
+  RoundedRectangleBorder priorityBorder() {
+    return RoundedRectangleBorder(
+      side: const BorderSide(width: 3, color: Colors.white),
+      borderRadius: BorderRadius.circular(5),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -707,71 +732,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        newTaskData["priority"] = "none";
-                        criteriasFilledIn["priority"] = true;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      shape: newTaskData["priority"] == "none" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,
-                    ),
-                    child: const Text("None"),
-                  ),
-                ),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        newTaskData["priority"] = "low";
-                        criteriasFilledIn["priority"] = true;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      shape: newTaskData["priority"] == "low" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,
-                    ),
-                    child: const Text("Low"),
-                  ),
-                ),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        newTaskData["priority"] = "medium";
-                        criteriasFilledIn["priority"] = true;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.yellow,
-                      shape: newTaskData["priority"] == "medium" ? RoundedRectangleBorder(side: const BorderSide(width: 3, color: Colors.white), borderRadius: BorderRadius.circular(5)) : null,
-                    ),
-                    child: const Text("Medium"),
-                  ),
-                ),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        newTaskData["priority"] = "high";
-                        criteriasFilledIn["priority"] = true;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      shape: newTaskData["priority"] == "high"
-                          ? RoundedRectangleBorder(
-                              side: const BorderSide(width: 3, color: Colors.white),
-                              borderRadius: BorderRadius.circular(5),
-                            )
-                          : null,
-                    ),
-                    child: const Text("High"),
-                  ),
-                ),
+               priorityButton(Priority.none),
+               priorityButton(Priority.low),
+               priorityButton(Priority.medium),
+               priorityButton(Priority.high),
               ],
             ),
           ),
@@ -812,10 +776,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               ),
               title: AppLayout.colorAdaptivText("add subtask"),
               onTap: () {
-                subTaskDialog(newTaskData, context).then(
+                subTaskDialog(context).then(
                   (value) {
-                    if (value != null && value) {
-                      setState(() {});
+                    if (value != null) {
+                      setState(() {
+                        newTaskData["subtasks"].add(value);
+                      });
                     }
                   },
                 );
@@ -831,6 +797,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   color: colorScheme.card,
                   elevation: 2,
                   child: ListTile(
+                    shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[subtask["priority"]])), //TODO
+                    
                     title: Text(
                       subtask["title"]!,
                       style: TextStyle(color: colorScheme.primary),
@@ -996,8 +964,9 @@ Widget _settingsCardTitle(String title) {
   return AppLayout.colorAdaptivText(title);
 }
 
-Future subTaskDialog(Map task, context) {
-  Map newSubTaskData = {"title": "", "description": "", "completed": false};
+Future subTaskDialog(context) {
+  Map newSubTaskData = {"title": "", "description": "", "completed": false, "priority": Priority.none.index};
+  BorderSide priorityBorder = BorderSide(color: colorScheme.text, width: 3);
 
   return showDialog(
     context: context,
@@ -1035,14 +1004,66 @@ Future subTaskDialog(Map task, context) {
                           cursorColor: colorScheme.primary,
                           onChanged: (value) => newSubTaskData["description"] = value,
                         ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              ElevatedButton(
+                                onPressed: () => setState(() {
+                                  newSubTaskData["priority"] = Priority.none.index;
+                                }),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey,
+                                  shape: CircleBorder(
+                                    side: newSubTaskData["priority"] == Priority.none.index ? priorityBorder : const BorderSide(),
+                                  ),
+                                ),
+                                child: null,
+                              ),
+                              ElevatedButton(
+                                onPressed: () => setState(() {
+                                  newSubTaskData["priority"] = Priority.low.index;
+                                }),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  shape: CircleBorder(
+                                    side: newSubTaskData["priority"] == Priority.low.index ? priorityBorder : const BorderSide(),
+                                  ),
+                                ),
+                                child: null,
+                              ),
+                              ElevatedButton(
+                                onPressed: () => setState(() {
+                                  newSubTaskData["priority"] = Priority.medium.index;
+                                }),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.yellow,
+                                  shape: CircleBorder(
+                                    side: newSubTaskData["priority"] == Priority.medium.index ? priorityBorder : const BorderSide(),
+                                  ),
+                                ),
+                                child: null,
+                              ),
+                              ElevatedButton(
+                                onPressed: () => setState(() {
+                                  newSubTaskData["priority"] = Priority.high.index;
+                                }),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  shape: CircleBorder(
+                                    side: newSubTaskData["priority"] == Priority.high.index ? priorityBorder : const BorderSide(),
+                                  ),
+                                ),
+                                child: null,
+                              )
+                            ],
+                          ),
+                        ),
                         ElevatedButton.icon(
                           onPressed: () {
                             if (newSubTaskData["title"] != "") {
                               setState(() {
-                                task["subtasks"].add(Map.from(newSubTaskData));
-                                newSubTaskData["title"] = "";
-                                newSubTaskData["description"] = "";
-                                Navigator.of(context, rootNavigator: true).pop(true);
+                                Navigator.of(context, rootNavigator: true).pop(newSubTaskData);
                               });
                             }
                           },
