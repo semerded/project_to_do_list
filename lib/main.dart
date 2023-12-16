@@ -140,7 +140,6 @@ class AppLayout {
 }
 
 class GlobalFunctions {
-  // TODO change name
   static String checkIfTaskTypeIsValid(taskTypeOfTask) {
     if (taskTypeCatergories.contains(taskTypeOfTask)) {
       return taskTypeOfTask;
@@ -797,7 +796,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   color: colorScheme.card,
                   elevation: 2,
                   child: ListTile(
-                    shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[subtask["priority"]])), //TODO
+                    shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[subtask["priority"]])),
                     
                     title: Text(
                       subtask["title"]!,
@@ -852,98 +851,104 @@ class _SettingsMenuState extends State<SettingsMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        leading: IconButton(
-          // TODO laat het werken voor telefoon back button
-          onPressed: () {
-            Navigator.of(context).pop(false);
-          },
-          icon: const Icon(Icons.arrow_back),
+    return WillPopScope(
+      onWillPop: () async {
+          Navigator.of(context).pop(true);
+          return false;
+      },
+      child: Scaffold(
+        backgroundColor: colorScheme.background,
+        appBar: AppBar(
+          leading: IconButton(
+            // TODO laat het werken voor telefoon back button
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            icon: const Icon(Icons.arrow_back),
+          ),
+          title: const Text("Settings"),
+          backgroundColor: colorScheme.primary,
         ),
-        title: const Text("Settings"),
-        backgroundColor: colorScheme.primary,
-      ),
-      body: ListView(
-        children: [
-          ///
-          /// app accent color
-          ///
-          _settingsCard(
-            title: DropdownButton(
-              dropdownColor: Colors.grey[700],
-              value: null,
-              hint: AppLayout.colorAdaptivText("Accent Color: $accentColor"),
-              items: colorSchemeChoice.map(
-                (String value) {
-                  return DropdownMenuItem(
-                    value: value,
-                    child: Text(value),
-                  );
-                },
-              ).toList(),
-              icon: const Icon(Icons.keyboard_arrow_down),
-              onChanged: (value) => applyNewColor(value),
+        body: ListView(
+          children: [
+            ///
+            /// app accent color
+            ///
+            _settingsCard(
+              title: DropdownButton(
+                dropdownColor: Colors.grey[700],
+                value: null,
+                hint: AppLayout.colorAdaptivText("Accent Color: $accentColor"),
+                items: colorSchemeChoice.map(
+                  (String value) {
+                    return DropdownMenuItem(
+                      value: value,
+                      child: Text(value),
+                    );
+                  },
+                ).toList(),
+                icon: const Icon(Icons.keyboard_arrow_down),
+                onChanged: (value) => applyNewColor(value),
+              ),
             ),
-          ),
-
-          ///
-          /// show programming color
-          ///
-          _settingsCard(
-            title: _settingsCardTitle("Show Programming Color"),
-            leading: Switch(
-              value: showProgrammingColor,
-              activeColor: colorScheme.primary,
-              onChanged: (value) => setState(() {
-                showProgrammingColor = value;
-              }),
-            ),
-          ),
-
-          ///
-          /// dark mode
-          ///
-          _settingsCard(
-            title: _settingsCardTitle("Dark Mode"),
-            leading: Switch(
-              value: darkMode,
-              activeColor: colorScheme.primary,
-              onChanged: (value) => setState(() {
-                colorScheme.switchLightDarkMode();
-                darkMode = value;
-              }),
-            ),
-          ),
-          _settingsCard(
-              title: _settingsCardTitle("Only Search In Title"),
+    
+            ///
+            /// show programming color
+            ///
+            _settingsCard(
+              title: _settingsCardTitle("Show Programming Color"),
               leading: Switch(
-                value: onlySearchInTitle,
+                value: showProgrammingColor,
                 activeColor: colorScheme.primary,
-                onChanged: (value) {
-                  setState(() {
-                    onlySearchInTitle = !onlySearchInTitle;
-                  });
-                },
-              )),
-          _settingsCard(
-              title: _settingsCardTitle("Auto Move Task To In Progress"),
+                onChanged: (value) => setState(() {
+                  showProgrammingColor = value;
+                }),
+              ),
+            ),
+    
+            ///
+            /// dark mode
+            ///
+            _settingsCard(
+              title: _settingsCardTitle("Dark Mode"),
               leading: Switch(
-                value: false,
+                value: darkMode,
                 activeColor: colorScheme.primary,
-                onChanged: (value) {
-                  setState(() {
-                    // onlySearchInTitle = !onlySearchInTitle;
-                  });
-                },
-              ))
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).pop(true),
-        backgroundColor: colorScheme.primary,
-        child: const Icon(Icons.save),
+                onChanged: (value) => setState(() {
+                  colorScheme.switchLightDarkMode();
+                  darkMode = value;
+                }),
+              ),
+            ),
+            _settingsCard(
+                title: _settingsCardTitle("Only Search In Title"),
+                leading: Switch(
+                  value: onlySearchInTitle,
+                  activeColor: colorScheme.primary,
+                  onChanged: (value) {
+                    setState(() {
+                      onlySearchInTitle = !onlySearchInTitle;
+                    });
+                  },
+                )),
+            _settingsCard(
+                title: _settingsCardTitle("Auto Move Task To In Progress"),
+                leading: Switch(
+                  value: false,
+                  activeColor: colorScheme.primary,
+                  onChanged: (value) {
+                    setState(() {
+                      // onlySearchInTitle = !onlySearchInTitle;
+                    });
+                  },
+                ))
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          backgroundColor: colorScheme.primary,
+          child: const Icon(Icons.check),
+        ),
       ),
     );
   }
