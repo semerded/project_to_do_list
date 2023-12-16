@@ -30,20 +30,20 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   Widget priorityButton(Priority priorityLevel) {
     return Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        newTaskData["priority"] = priorityLevel.index;
-                        criteriasFilledIn["priority"] = true;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: taskPriorityColors[priorityLevel.index],
-                      shape: newTaskData["priority"] == priorityLevel.index ? priorityBorder() : null,
-                    ),
-                    child: Text(priorityLevel.name),
-                  ),
-                );
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            newTaskData["priority"] = priorityLevel.index;
+            criteriasFilledIn["priority"] = true;
+          });
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: taskPriorityColors[priorityLevel.index],
+          shape: newTaskData["priority"] == priorityLevel.index ? priorityBorder() : null,
+        ),
+        child: Text(priorityLevel.name),
+      ),
+    );
   }
 
   RoundedRectangleBorder priorityBorder() {
@@ -123,10 +123,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-               priorityButton(Priority.none),
-               priorityButton(Priority.low),
-               priorityButton(Priority.medium),
-               priorityButton(Priority.high),
+                priorityButton(Priority.none),
+                priorityButton(Priority.low),
+                priorityButton(Priority.medium),
+                priorityButton(Priority.high),
               ],
             ),
           ),
@@ -156,57 +156,59 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               },
             ),
           ),
-          Card(
-            elevation: 2,
-            shape: AppLayout.cardBorder(borderRadius: 20, borderColor: colorScheme.primary, borderWidth: 3),
-            color: colorScheme.card,
-            child: ListTile(
-              leading: Icon(
-                Icons.add,
-                color: colorScheme.text,
-              ),
-              title: AppLayout.colorAdaptivText("add subtask"),
-              onTap: () {
-                subTaskDialog(context).then(
-                  (value) {
-                    if (value != null) {
-                      setState(() {
-                        newTaskData["subtasks"].add(value);
-                      });
-                    }
-                  },
-                );
-              },
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: newTaskData["subtasks"].length,
-              itemBuilder: (context, index) {
-                Map subtask = newTaskData["subtasks"][index];
-                return Card(
-                  color: colorScheme.card,
-                  elevation: 2,
-                  child: ListTile(
-                    shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[subtask["priority"]])),
-                    
-                    title: Text(
-                      subtask["title"]!,
-                      style: TextStyle(color: colorScheme.primary),
-                    ),
-                    subtitle: AppLayout.colorAdaptivText(subtask["description"]!),
-                    trailing: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            newTaskData["subtasks"].removeAt(index);
-                          });
-                        },
-                        icon: const Icon(Icons.delete_forever)),
+          Column(
+            children: [
+              Card(
+                elevation: 2,
+                shape: AppLayout.cardBorder(borderRadius: 20, borderColor: colorScheme.primary, borderWidth: 3),
+                color: colorScheme.card,
+                child: ListTile(
+                  leading: Icon(
+                    Icons.add,
+                    color: colorScheme.text,
                   ),
-                );
-              },
-            ),
-          )
+                  title: AppLayout.colorAdaptivText("add subtask"),
+                  onTap: () {
+                    subTaskDialog(context).then(
+                      (value) {
+                        if (value != null) {
+                          setState(() {
+                            newTaskData["subtasks"].add(value);
+                          });
+                        }
+                      },
+                    );
+                  },
+                ),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: newTaskData["subtasks"].length,
+                itemBuilder: (context, index) {
+                  Map subtask = newTaskData["subtasks"][index];
+                  return Card(
+                    color: colorScheme.card,
+                    elevation: 2,
+                    child: ListTile(
+                      shape: Border(left: BorderSide(width: 10, color: taskPriorityColors[subtask["priority"]])),
+                      title: Text(
+                        subtask["title"]!,
+                        style: TextStyle(color: colorScheme.primary),
+                      ),
+                      subtitle: AppLayout.colorAdaptivText(subtask["description"]!),
+                      trailing: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              newTaskData["subtasks"].removeAt(index);
+                            });
+                          },
+                          icon: const Icon(Icons.delete_forever)),
+                    ),
+                  );
+                },
+              )
+            ],
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(

@@ -45,11 +45,11 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () => Navigator.of(context).pop([false, unchangedCopyOfCurrentTask]),
         ),
         actions: [
           IconButton(
-            onPressed: () => null,
+            onPressed: () => Navigator.of(context).pop(null),
             icon: const Icon(Icons.delete_forever),
           )
         ],
@@ -102,7 +102,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                   title: AppLayout.colorAdaptivText("add subtask"),
                   onTap: () {
                     subTaskDialog(context).then((value) {
-                      if (value != null && value) {
+                      if (value != null) {
                         setState(() {
                           widget.toDoTaskPerIndex["subtasks"].add(value);
                         });
@@ -128,11 +128,13 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                       title: AppLayout.colorAdaptivText(subTask["title"]),
                       subtitle: AppLayout.colorAdaptivText(subTask["description"]),
                       shape: subTaskCompleted ? const RoundedRectangleBorder(side: BorderSide(width: 2, color: Colors.green), borderRadius: BorderRadius.all(Radius.circular(5))) : null,
-                      trailing: IconButton(
-                        onPressed: () {},
-                        style: IconButton.styleFrom(backgroundColor: subTaskCompleted ? Colors.blue : Colors.green),
-                        icon: subTaskCompleted ? const Icon(Icons.remove_done) : const Icon(Icons.done_all),
-                      ),
+                     trailing: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              widget.toDoTaskPerIndex["subtasks"].removeAt(subIndex);
+                            });
+                          },
+                          icon: const Icon(Icons.delete_forever)),
                     ),
                   );
                 },
