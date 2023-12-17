@@ -17,6 +17,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   deepcopy: ^1.1.2
   collection: ^1.17.2
+  percent_indicator: ^4.0.1
+
 
 
 dev_dependencies:

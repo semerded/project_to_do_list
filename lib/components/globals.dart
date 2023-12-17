@@ -38,11 +38,12 @@ Map taskTypesActive = {
 
 Map taskPriorityColors = {Priority.none.index: Colors.grey, Priority.low.index: Colors.green, Priority.medium.index: Colors.yellow, Priority.high.index: Colors.red};
 
-Map userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false};
+Map userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false, "searchInSubTasks": false};
 
 String accentColor = userPresets["colorSchemeChoice"]; // TODO make json with app settings and add save color scheme in there
 bool showProgrammingColor = userPresets["showProgrammingColor"];
 bool darkMode = userPresets["darkMode"];
 bool onlySearchInTitle = userPresets["onlySearchInTitle"];
+bool searchInSubTasks = userPresets["searchInSubTasks"];
 
 APPcolorScheme colorScheme = APPcolorScheme();

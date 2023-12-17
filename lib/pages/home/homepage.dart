@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/globals.dart';
-import 'package:project_to_do_list/components/ui/app_widgets.dart';
 import 'package:project_to_do_list/functions/savefile_handeling/file_reader.dart';
-import 'package:project_to_do_list/pages/home/filter_tasks.dart';
+import 'package:project_to_do_list/pages/home/filter/priority_filter.dart';
+import 'package:project_to_do_list/pages/home/filter/search_filter.dart';
+import 'package:project_to_do_list/pages/home/filter/filter_tasks.dart';
 import 'package:project_to_do_list/pages/newtask.dart';
 import 'package:project_to_do_list/pages/settings.dart';
 import 'place_todo_task.dart';
@@ -25,126 +26,133 @@ class _APPState extends State<APP> {
     });
   }
 
+  List filterTaskByPriority = [true, true, true, true];
   String filteredTasksBySearch = "";
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: DefaultTabController(
-        animationDuration: const Duration(milliseconds: 300),
-        length: 3,
-        child: Scaffold(
-          backgroundColor: colorScheme.background,
-          appBar: AppBar(
-            backgroundColor: colorScheme.primary,
-            title: const Center(
-              child: Text("The Project To Do List"),
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: MaterialApp(
+        home: DefaultTabController(
+          animationDuration: const Duration(milliseconds: 300),
+          length: 3,
+          child: Scaffold(
+            backgroundColor: colorScheme.background,
+            appBar: AppBar(
+              backgroundColor: colorScheme.primary,
+              leading: IconButton(
+                icon: const Icon(Icons.assistant),
+                onPressed: () => null,
+              ),
+              title: const Center(
+                child: Text("The Project To Do List"),
+              ),
+              bottom: const TabBar(
+                tabs: [Text("To Do"), Text("In Progress"), Text("Completed")],
+              ),
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<bool>(builder: (context) => const SettingsMenu()),
+                    ).then(
+                      (value) {
+                        if (value != null && value) {
+                          setState(() {});
+                        }
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.settings),
+                )
+              ],
             ),
-            bottom: const TabBar(
-              tabs: [Text("To Do"), Text("In Progress"), Text("Completed")],
-            ),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<bool>(builder: (context) => const SettingsMenu()),
-                  ).then(
-                    (value) {
-                      if (value != null && value) {
-                        setState(() {});
-                      }
-                    },
-                  );
-                },
-                icon: const Icon(Icons.settings),
-              )
-            ],
-          ),
 
-          // main body
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                child: TextField(
-                  cursorColor: colorScheme.primary,
-                  decoration: InputDecoration(
-
-                      /// when inactive
-                      enabledBorder: AppLayout.inactiveBorder(),
-
-                      /// when active
-                      focusedBorder: AppLayout.activeBorder(),
-                      hintText: "Search for task",
-                      hintStyle: TextStyle(color: colorScheme.text),
-                      iconColor: colorScheme.primary,
-                      icon: const Icon(Icons.search)),
-                  style: TextStyle(color: colorScheme.text, decorationColor: colorScheme.primary),
+            // main body
+            body: Column(
+              children: [
+                FilterBySearch(
                   onChanged: (value) => setState(() {
                     filteredTasksBySearch = value;
+                    print(filterTaskByPriority);
                   }),
                 ),
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    PlaceToDoTasks(
-                      currentTab: "toDo",
-                      filterTaskTypeBySearch: filteredTasksBySearch,
-                    ),
-                    PlaceToDoTasks(
-                      currentTab: "inProgress",
-                      filterTaskTypeBySearch: filteredTasksBySearch,
-                    ),
-                    PlaceToDoTasks(
-                      currentTab: "completed",
-                      filterTaskTypeBySearch: filteredTasksBySearch,
-                    ),
-                  ],
+                PriorityButton(
+                  filterTaskByPriority: filterTaskByPriority, // doesn't update yet
                 ),
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddTaskScreen()),
-              ).then(
-                (value) {
-                  if (value != null && value) {
-                    setState(() {
-                      readLocalJSONtoDoTaskSaveFile().then((Map value) {
-                        setState(() {
-                          toDoTasks = value;
-                        });
-                      });
-                    });
-                  }
-                },
-              );
-            },
-            backgroundColor: colorScheme.primary,
-            child: const Icon(Icons.add),
-          ),
-          bottomNavigationBar: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: null,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(width: 1, color: colorScheme.text),
-                    borderRadius: BorderRadius.circular(5),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      PlaceToDoTasks(
+                        currentTab: "toDo",
+                        filterTaskTypeBySearch: filteredTasksBySearch,
+                        filterTaskByPriority: filterTaskByPriority,
+                      ),
+                      PlaceToDoTasks(
+                        currentTab: "inProgress",
+                        filterTaskTypeBySearch: filteredTasksBySearch,
+                        filterTaskByPriority: filterTaskByPriority,
+                      ),
+                      PlaceToDoTasks(
+                        currentTab: "completed",
+                        filterTaskTypeBySearch: filteredTasksBySearch,
+                        filterTaskByPriority: filterTaskByPriority,
+                      ),
+                    ],
                   ),
                 ),
-                child: Icon(Icons.cancel_outlined, color: colorScheme.text),
-              ),
-              const Flexible(
-                child: SizedBox(height: 30, child: FilterTaskTypeButton()),
-              )
-            ],
+              ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddTaskScreen()),
+                ).then(
+                  (value) {
+                    if (value != null && value) {
+                      setState(() {
+                        readLocalJSONtoDoTaskSaveFile().then((Map value) {
+                          setState(() {
+                            toDoTasks = value;
+                          });
+                        });
+                      });
+                    }
+                  },
+                );
+              },
+              backgroundColor: colorScheme.primary,
+              child: const Icon(Icons.add),
+            ),
+            bottomNavigationBar: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FloatingActionButton(
+                  onPressed: null,
+                  backgroundColor: colorScheme.card,
+                  shape: CircleBorder(
+                    side: BorderSide(
+                      color: colorScheme.text,
+                      width: 1,
+                    ),
+                  ),
+                  mini: true,
+                  child: Icon(Icons.cancel_outlined, color: colorScheme.text),
+                ),
+                const Flexible(
+                  child: SizedBox(height: 30, child: FilterTaskTypeButton()),
+                )
+              ],
+            ),
           ),
         ),
       ),

@@ -22,8 +22,8 @@ class _SettingsMenuState extends State<SettingsMenu> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-          Navigator.of(context).pop(true);
-          return false;
+        Navigator.of(context).pop(true);
+        return false;
       },
       child: Scaffold(
         backgroundColor: colorScheme.background,
@@ -59,7 +59,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                 onChanged: (value) => applyNewColor(value),
               ),
             ),
-    
+
             ///
             /// show programming color
             ///
@@ -73,7 +73,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                 }),
               ),
             ),
-    
+
             ///
             /// dark mode
             ///
@@ -95,7 +95,18 @@ class _SettingsMenuState extends State<SettingsMenu> {
                   activeColor: colorScheme.primary,
                   onChanged: (value) {
                     setState(() {
-                      onlySearchInTitle = !onlySearchInTitle;
+                      onlySearchInTitle = value;
+                    });
+                  },
+                )),
+            settingsCard(
+                title: settingsCardTitle("Search Tasks In Subtasks"),
+                leading: Switch(
+                  value: searchInSubTasks,
+                  activeColor: colorScheme.primary,
+                  onChanged: (value) {
+                    setState(() {
+                      searchInSubTasks = value;
                     });
                   },
                 )),

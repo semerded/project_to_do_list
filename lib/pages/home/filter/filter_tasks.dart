@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/globals.dart';
 
-bool checkIfTaskIsNotFilteredOut(Map taskData, filteredTasksBySearch) {
-    if (taskData["title"].contains(filteredTasksBySearch)) {
-      return true;
+bool checkIfTaskIsNotFilteredOut(Map taskData, filteredTasksBySearch, filterTaskByPriority) {
+  bool taskIsNotFilteredOut = true;
+    if (!taskData["title"].contains(filteredTasksBySearch)) {
+      taskIsNotFilteredOut = false;
     }
-    if (!onlySearchInTitle && taskData["description"].contains(filteredTasksBySearch)) {
-      return true;
+    if (!onlySearchInTitle && !taskData["description"].contains(filteredTasksBySearch)) {
+      taskIsNotFilteredOut = false;
     }
-    // if (taskTypesActive[taskData["taskType"]]) {
-    //   return true;
-    // }
-    return false;
+    if (searchInSubTasks) {
+      for (var subTask in taskData["subtasks"]) {
+        if (!subTask["title"].contains(filteredTasksBySearch)) {
+          taskIsNotFilteredOut = false;
+        }
+      }
+    }
+    if (!filterTaskByPriority[taskData["priority"]]) {
+      taskIsNotFilteredOut = false;
+    }
+    return taskIsNotFilteredOut;
   }
 
 class FilterTaskTypeButton extends StatefulWidget {
