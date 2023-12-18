@@ -27,3 +27,5 @@ double getTaskCompletion(List<dynamic> subtaskList) {
   }
   return completedTaskCounter;
 }
+
+

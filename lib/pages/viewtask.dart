@@ -6,7 +6,6 @@ import 'package:project_to_do_list/components/ui/app_widgets.dart';
 import 'package:project_to_do_list/functions/global_functions.dart';
 import 'package:project_to_do_list/components/ui/show_subtask_dialog.dart';
 
-
 class ShowTaskScreen extends StatefulWidget {
   final Map toDoTaskPerIndex;
   final String currentTab;
@@ -36,7 +35,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () {
+      onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
 
         if (!currentFocus.hasPrimaryFocus) {
@@ -74,9 +73,21 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
               ),
               child: AbsorbPointer(
                 child: Slider(
-                  value: getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]),
+                  value: (() {
+                    if (widget.currentTab == "completed" && widget.toDoTaskPerIndex["subtasks"].isEmpty) {
+                      return 1.0;
+                    } else {
+                      return getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]);
+                    }
+                  }()),
                   min: 0,
-                  max: widget.toDoTaskPerIndex["subtasks"].length.toDouble(),
+                  max: (() {
+                    if (widget.toDoTaskPerIndex["subtasks"].isEmpty) {
+                      return 1.0;
+                    } else {
+                      return widget.toDoTaskPerIndex["subtasks"].length.toDouble();
+                    }
+                  }()),
                   onChanged: (value) => value,
                 ),
               ),
@@ -92,7 +103,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
               padding: const EdgeInsets.all(8),
               child: AppLayout.colorAdaptivText(widget.toDoTaskPerIndex["description"], fontSize: 18),
             ),
-    
+
             ///////////////////////
             // subtask displayer //
             ///////////////////////
@@ -136,7 +147,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                         title: AppLayout.colorAdaptivText(subTask["title"]),
                         subtitle: AppLayout.colorAdaptivText(subTask["description"]),
                         shape: subTaskCompleted ? const RoundedRectangleBorder(side: BorderSide(width: 2, color: Colors.green), borderRadius: BorderRadius.all(Radius.circular(5))) : null,
-                       trailing: IconButton(
+                        trailing: IconButton(
                             onPressed: () {
                               setState(() {
                                 widget.toDoTaskPerIndex["subtasks"].removeAt(subIndex);
@@ -165,7 +176,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                 style: ElevatedButton.styleFrom(backgroundColor: isTaskChanged() ? Colors.red : Colors.blue),
               ),
             ),
-    
+
             // update changes
             Expanded(
               child: ElevatedButton.icon(

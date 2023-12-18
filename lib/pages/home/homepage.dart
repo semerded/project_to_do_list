@@ -8,6 +8,8 @@ import 'package:project_to_do_list/pages/newtask.dart';
 import 'package:project_to_do_list/pages/settings.dart';
 import 'place_todo_task.dart';
 
+// make it so that when a task with 0 subtasks is completed, the slider will go to 100
+
 class APP extends StatefulWidget {
   const APP({super.key});
 
@@ -86,7 +88,7 @@ class _APPState extends State<APP> {
                   }),
                 ),
                 PriorityButton(
-                  filterTaskByPriority: filterTaskByPriority, // doesn't update yet
+                  filterTaskByPriority: filterTaskByPriority, // TODO doesn't update yet
                 ),
                 Expanded(
                   child: TabBarView(
