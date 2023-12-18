@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/enums.dart';
 import 'package:project_to_do_list/components/globals.dart';
 import 'package:project_to_do_list/components/ui/app_widgets.dart';
+import 'package:project_to_do_list/components/ui/priority_border.dart';
+import 'package:project_to_do_list/components/ui/priority_button.dart';
+import 'package:project_to_do_list/functions/global_functions.dart';
 import 'package:project_to_do_list/functions/savefile_handeling/file_writer.dart';
 import 'package:project_to_do_list/components/ui/show_subtask_dialog.dart';
 
@@ -16,17 +19,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
   String taskType = taskTypeCatergories[0];
   Map<String, bool> criteriasFilledIn = {"title": false, "taskType": true, "priority": false};
-  Map newTaskData = {"title": "", "description": "", "taskType": "", "priority": "", "subtasks": []};
-
-  bool checkIfAllCriteriaIsFilledIn(criteriaList) {
-    bool allCriteriaFilledIn = true;
-    for (var item in criteriaList.values) {
-      if (item == false) {
-        allCriteriaFilledIn = false;
-      }
-    }
-    return allCriteriaFilledIn;
-  }
+  Map newTaskData = {"title": "", "description": "", "taskType": "", "priority": -1, "subtasks": []};
 
   Widget priorityButton(Priority priorityLevel) {
     return Expanded(
@@ -46,17 +39,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
-  RoundedRectangleBorder priorityBorder() {
-    return RoundedRectangleBorder(
-      side: const BorderSide(width: 3, color: Colors.white),
-      borderRadius: BorderRadius.circular(5),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () {
+      onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
 
         if (!currentFocus.hasPrimaryFocus) {
@@ -100,7 +86,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 },
               ),
             ),
-    
+
             ///
             /// add description
             ///
@@ -127,16 +113,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  priorityButton(Priority.none),
-                  priorityButton(Priority.low),
-                  priorityButton(Priority.medium),
-                  priorityButton(Priority.high),
-                ],
-              ),
+            SingleClickPriorityButton(
+              currentPriority: newTaskData["priority"],
+              buttonCallback: (value) => setState(() {
+                newTaskData["priority"] = value;
+                criteriasFilledIn["priority"] = true;
+              }),
             ),
             Container(
               color: Colors.grey[700],

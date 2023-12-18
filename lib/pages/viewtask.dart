@@ -6,6 +6,7 @@ import 'package:project_to_do_list/components/ui/app_widgets.dart';
 import 'package:project_to_do_list/components/ui/delete_task_dialog.dart';
 import 'package:project_to_do_list/functions/global_functions.dart';
 import 'package:project_to_do_list/components/ui/show_subtask_dialog.dart';
+import 'package:project_to_do_list/pages/edittask.dart';
 
 class ShowTaskScreen extends StatefulWidget {
   final Map toDoTaskPerIndex;
@@ -20,6 +21,7 @@ class ShowTaskScreen extends StatefulWidget {
 class _ShowTaskScreenState extends State<ShowTaskScreen> {
   Map unchangedCopyOfCurrentTask = {}; //  not possible with deepcopy
 
+
   bool isTaskChanged() {
     if (const DeepCollectionEquality().equals(unchangedCopyOfCurrentTask, widget.toDoTaskPerIndex)) {
       return false; // false because task has not changed
@@ -31,6 +33,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
   void initState() {
     super.initState();
     unchangedCopyOfCurrentTask = widget.toDoTaskPerIndex.deepcopy();
+
   }
 
   @override
@@ -57,10 +60,15 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
           ),
           actions: [
             IconButton(
-              onPressed: () => null,
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditTaskScreen(taskData: widget.toDoTaskPerIndex),
+                ),
+              ).then((value) => null),
               icon: const Icon(Icons.edit),
             ),
-             IconButton(
+            IconButton(
               onPressed: () => deleteTaskDialog(context).then((value) {
                 if (value != null && value) {
                   Navigator.of(context).pop(null);
@@ -68,8 +76,6 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
               }),
               icon: const Icon(Icons.delete_forever),
             ),
-            
-           
           ],
         ),
         body: ListView(

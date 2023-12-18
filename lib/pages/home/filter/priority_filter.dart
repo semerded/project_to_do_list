@@ -3,12 +3,12 @@ import 'package:project_to_do_list/components/enums.dart';
 import 'package:project_to_do_list/components/globals.dart';
 import 'package:project_to_do_list/components/ui/priority_border.dart';
 
-typedef buttonCallback = void Function(bool value);
-typedef valueCallback = void Function(List value);
+typedef ButtonCallback = void Function(bool value);
+typedef ValueCallback = void Function(List value);
 
 class PriorityButton extends StatefulWidget {
   final List filterTaskByPriority;
-  final valueCallback onChanged;
+  final ValueCallback onChanged;
 
   const PriorityButton({required this.filterTaskByPriority, required this.onChanged, super.key});
 
@@ -59,7 +59,7 @@ class _PriorityButtonState extends State<PriorityButton> {
 }
 
 class _PriorityButton extends StatefulWidget {
-  final buttonCallback onClicked;
+  final ButtonCallback onClicked;
   final Priority priority;
   final List filterTaskByPriority;
 

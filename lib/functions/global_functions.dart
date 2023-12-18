@@ -28,4 +28,14 @@ double getTaskCompletion(List<dynamic> subtaskList) {
   return completedTaskCounter;
 }
 
+bool checkIfAllCriteriaIsFilledIn(criteriaList) {
+    bool allCriteriaFilledIn = true;
+    for (var item in criteriaList.values) {
+      if (item == false) {
+        allCriteriaFilledIn = false;
+      }
+    }
+    return allCriteriaFilledIn;
+  }
+
 
