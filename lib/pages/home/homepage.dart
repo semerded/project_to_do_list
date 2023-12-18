@@ -89,6 +89,9 @@ class _APPState extends State<APP> {
                 ),
                 PriorityButton(
                   filterTaskByPriority: filterTaskByPriority, // TODO doesn't update yet
+                  onClick: (value) => setState(() {
+                    filterTaskByPriority = value;
+                  }),
                 ),
                 Expanded(
                   child: TabBarView(

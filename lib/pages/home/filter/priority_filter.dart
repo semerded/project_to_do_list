@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/enums.dart';
 import 'package:project_to_do_list/components/globals.dart';
 
-typedef MyCallback = void Function(bool value);
+typedef buttonCallback = void Function(bool value);
+typedef valueCallback = void Function(List value);
 
 class PriorityButton extends StatefulWidget {
   final List filterTaskByPriority;
+  final valueCallback onClick;
 
-  const PriorityButton({required this.filterTaskByPriority, super.key});
+  const PriorityButton({required this.filterTaskByPriority, required this.onClick, super.key});
 
   @override
   State<PriorityButton> createState() => _PriorityButtonState();
@@ -22,7 +24,8 @@ class _PriorityButtonState extends State<PriorityButton> {
           priority: Priority.none,
           filterTaskByPriority: widget.filterTaskByPriority,
           onClicked: (value) => setState(() {
-             widget.filterTaskByPriority[Priority.none.index] = value;
+            widget.filterTaskByPriority[Priority.none.index] = value;
+            widget.onClick(widget.filterTaskByPriority);
           }),
         ),
         _PriorityButton(
@@ -30,6 +33,7 @@ class _PriorityButtonState extends State<PriorityButton> {
           filterTaskByPriority: widget.filterTaskByPriority,
           onClicked: (value) => setState(() {
             widget.filterTaskByPriority[Priority.low.index] = value;
+            widget.onClick(widget.filterTaskByPriority);
           }),
         ),
         _PriorityButton(
@@ -37,6 +41,7 @@ class _PriorityButtonState extends State<PriorityButton> {
           filterTaskByPriority: widget.filterTaskByPriority,
           onClicked: (value) => setState(() {
             widget.filterTaskByPriority[Priority.medium.index] = value;
+            widget.onClick(widget.filterTaskByPriority);
           }),
         ),
         _PriorityButton(
@@ -44,6 +49,7 @@ class _PriorityButtonState extends State<PriorityButton> {
           filterTaskByPriority: widget.filterTaskByPriority,
           onClicked: (value) => setState(() {
             widget.filterTaskByPriority[Priority.high.index] = value;
+            widget.onClick(widget.filterTaskByPriority);
           }),
         )
       ],
@@ -52,7 +58,7 @@ class _PriorityButtonState extends State<PriorityButton> {
 }
 
 class _PriorityButton extends StatefulWidget {
-  final MyCallback onClicked;
+  final buttonCallback onClicked;
   final Priority priority;
   final List filterTaskByPriority;
 
