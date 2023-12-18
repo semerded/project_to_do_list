@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/enums.dart';
 import 'package:project_to_do_list/components/globals.dart';
+import 'package:project_to_do_list/components/ui/priority_border.dart';
 
 typedef buttonCallback = void Function(bool value);
 typedef valueCallback = void Function(List value);
 
 class PriorityButton extends StatefulWidget {
   final List filterTaskByPriority;
-  final valueCallback onClick;
+  final valueCallback onChanged;
 
-  const PriorityButton({required this.filterTaskByPriority, required this.onClick, super.key});
+  const PriorityButton({required this.filterTaskByPriority, required this.onChanged, super.key});
 
   @override
   State<PriorityButton> createState() => _PriorityButtonState();
@@ -25,7 +26,7 @@ class _PriorityButtonState extends State<PriorityButton> {
           filterTaskByPriority: widget.filterTaskByPriority,
           onClicked: (value) => setState(() {
             widget.filterTaskByPriority[Priority.none.index] = value;
-            widget.onClick(widget.filterTaskByPriority);
+            widget.onChanged(widget.filterTaskByPriority);
           }),
         ),
         _PriorityButton(
@@ -33,7 +34,7 @@ class _PriorityButtonState extends State<PriorityButton> {
           filterTaskByPriority: widget.filterTaskByPriority,
           onClicked: (value) => setState(() {
             widget.filterTaskByPriority[Priority.low.index] = value;
-            widget.onClick(widget.filterTaskByPriority);
+            widget.onChanged(widget.filterTaskByPriority);
           }),
         ),
         _PriorityButton(
@@ -41,7 +42,7 @@ class _PriorityButtonState extends State<PriorityButton> {
           filterTaskByPriority: widget.filterTaskByPriority,
           onClicked: (value) => setState(() {
             widget.filterTaskByPriority[Priority.medium.index] = value;
-            widget.onClick(widget.filterTaskByPriority);
+            widget.onChanged(widget.filterTaskByPriority);
           }),
         ),
         _PriorityButton(
@@ -49,7 +50,7 @@ class _PriorityButtonState extends State<PriorityButton> {
           filterTaskByPriority: widget.filterTaskByPriority,
           onClicked: (value) => setState(() {
             widget.filterTaskByPriority[Priority.high.index] = value;
-            widget.onClick(widget.filterTaskByPriority);
+            widget.onChanged(widget.filterTaskByPriority);
           }),
         )
       ],
@@ -84,11 +85,4 @@ class PriorityButtonState extends State<_PriorityButton> {
       ),
     );
   }
-}
-
-RoundedRectangleBorder priorityBorder() {
-  return RoundedRectangleBorder(
-    side: const BorderSide(width: 3, color: Colors.white),
-    borderRadius: BorderRadius.circular(5),
-  );
 }

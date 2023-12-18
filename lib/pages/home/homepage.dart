@@ -4,7 +4,7 @@ import 'package:project_to_do_list/functions/savefile_handeling/file_reader.dart
 import 'package:project_to_do_list/pages/home/filter/priority_filter.dart';
 import 'package:project_to_do_list/pages/home/filter/search_filter.dart';
 import 'package:project_to_do_list/pages/home/filter/filter_tasks.dart';
-import 'package:project_to_do_list/pages/newtask.dart';
+import 'package:project_to_do_list/pages/addtask.dart';
 import 'package:project_to_do_list/pages/settings.dart';
 import 'place_todo_task.dart';
 
@@ -84,12 +84,11 @@ class _APPState extends State<APP> {
                 FilterBySearch(
                   onChanged: (value) => setState(() {
                     filteredTasksBySearch = value;
-                    print(filterTaskByPriority);
                   }),
                 ),
                 PriorityButton(
-                  filterTaskByPriority: filterTaskByPriority, // TODO doesn't update yet
-                  onClick: (value) => setState(() {
+                  filterTaskByPriority: filterTaskByPriority,
+                  onChanged: (value) => setState(() {
                     filterTaskByPriority = value;
                   }),
                 ),
