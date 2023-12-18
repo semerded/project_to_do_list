@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/globals.dart';
 import 'package:deepcopy/deepcopy.dart';
 import 'package:project_to_do_list/components/ui/app_widgets.dart';
+import 'package:project_to_do_list/components/ui/delete_task_dialog.dart';
 import 'package:project_to_do_list/functions/global_functions.dart';
 import 'package:project_to_do_list/components/ui/show_subtask_dialog.dart';
 
@@ -56,9 +57,19 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
           ),
           actions: [
             IconButton(
-              onPressed: () => Navigator.of(context).pop(null),
+              onPressed: () => null,
+              icon: const Icon(Icons.edit),
+            ),
+             IconButton(
+              onPressed: () => deleteTaskDialog(context).then((value) {
+                if (value != null && value) {
+                  Navigator.of(context).pop(null);
+                }
+              }),
               icon: const Icon(Icons.delete_forever),
-            )
+            ),
+            
+           
           ],
         ),
         body: ListView(
