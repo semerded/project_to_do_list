@@ -63,7 +63,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditTaskScreen(taskData: widget.toDoTaskPerIndex),
+                  builder: (context) => EditTaskScreen(taskData: widget.toDoTaskPerIndex, currentTab: widget.currentTab),
                 ),
               ).then((value) => null),
               icon: const Icon(Icons.edit),
@@ -147,7 +147,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                     },
                   ),
                 ),
-                ListView.builder(
+                ListView.builder( // filter subtasks for their priority
                   shrinkWrap: true,
                   itemCount: widget.toDoTaskPerIndex["subtasks"].length,
                   itemBuilder: (context, subIndex) {
@@ -161,6 +161,16 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                           subTaskCompleted = !subTaskCompleted;
                           widget.toDoTaskPerIndex["subtasks"][subIndex]["completed"] = subTaskCompleted;
                         }),
+                        leading: ElevatedButton(
+                          onPressed: () => Container(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: taskPriorityColors[subTask["priority"]],
+                            shape:const  CircleBorder(
+                              side: BorderSide()
+                            )
+                          ),
+                          
+                          child: null),
                         title: AppLayout.colorAdaptivText(subTask["title"]),
                         subtitle: AppLayout.colorAdaptivText(subTask["description"]),
                         shape: subTaskCompleted ? const RoundedRectangleBorder(side: BorderSide(width: 2, color: Colors.green), borderRadius: BorderRadius.all(Radius.circular(5))) : null,

@@ -36,7 +36,7 @@ Map taskTypesActive = {
   taskTypeCatergories[10]: true,
 };
 
-Map taskPriorityColors = {Priority.none.index: Colors.grey, Priority.low.index: Colors.green, Priority.medium.index: Colors.yellow, Priority.high.index: Colors.red};
+Map taskPriorityColors = {Priority.none.index: Colors.grey, Priority.low.index: Colors.green, Priority.medium.index: Colors.yellow[600], Priority.high.index: Colors.red};
 
 Map userPresets = {"colorSchemeChoice": "Orange", "showProgrammingColor": true, "darkMode": true, "onlySearchInTitle": false, "searchInSubTasks": false, "defaultTab": 1};
 

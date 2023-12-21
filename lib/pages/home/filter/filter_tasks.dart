@@ -26,10 +26,10 @@ class FilterTaskTypeButton extends StatefulWidget {
   const FilterTaskTypeButton({super.key});
 
   @override
-  State<FilterTaskTypeButton> createState() => _MyWidgetState();
+  State<FilterTaskTypeButton> createState() => _FilterTaskTypeButtonState();
 }
 
-class _MyWidgetState extends State<FilterTaskTypeButton> {
+class _FilterTaskTypeButtonState extends State<FilterTaskTypeButton> {
   @override
   Widget build(BuildContext context) {
    

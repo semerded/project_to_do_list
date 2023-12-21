@@ -4,6 +4,7 @@ import 'package:project_to_do_list/components/globals.dart';
 import 'package:project_to_do_list/components/ui/app_widgets.dart';
 import 'package:project_to_do_list/components/ui/priority_border.dart';
 import 'package:project_to_do_list/components/ui/priority_button.dart';
+import 'package:project_to_do_list/components/ui/select_task_type.dart';
 import 'package:project_to_do_list/functions/global_functions.dart';
 import 'package:project_to_do_list/functions/savefile_handeling/file_writer.dart';
 import 'package:project_to_do_list/components/ui/show_subtask_dialog.dart';
@@ -17,9 +18,15 @@ class AddTaskScreen extends StatefulWidget {
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
   String taskTitle = "New Task";
-  String taskType = taskTypeCatergories[0];
+  String taskType = taskTypeCatergories.first;
   Map<String, bool> criteriasFilledIn = {"title": false, "taskType": true, "priority": false};
   Map newTaskData = {"title": "", "description": "", "taskType": "", "priority": -1, "subtasks": []};
+
+  @override
+  void initState() {
+    super.initState();
+    newTaskData["taskType"] = taskType;
+  }
 
   Widget priorityButton(Priority priorityLevel) {
     return Expanded(
@@ -120,31 +127,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 criteriasFilledIn["priority"] = true;
               }),
             ),
-            Container(
-              color: Colors.grey[700],
-              child: DropdownButton(
-                dropdownColor: Colors.grey[700],
-                isExpanded: true,
-                hint: Text("selected task type: $taskType"),
-                borderRadius: BorderRadius.circular(10),
-                icon: const Icon(Icons.keyboard_arrow_down),
-                padding: const EdgeInsets.all(10),
-                items: taskTypeCatergories.map(
-                  (String value) {
-                    return DropdownMenuItem(
-                      value: value,
-                      child: Text(value),
-                    );
-                  },
-                ).toList(),
-                onChanged: (value) {
-                  newTaskData["taskType"] = value!;
-                  setState(() {
-                    taskType = value;
-                    criteriasFilledIn["taskType"] = true;
-                  });
-                },
-              ),
+            SelectTaskType(
+              currentTaskType: newTaskData["taskType"],
+              taskTypeCallback: (value) {
+                newTaskData["taskType"] = value;
+                setState(() {
+                  criteriasFilledIn["taskType"] = true;
+                });
+              },
             ),
             Column(
               children: [

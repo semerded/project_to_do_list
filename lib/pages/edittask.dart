@@ -1,13 +1,16 @@
 import 'package:deepcopy/deepcopy.dart';
 import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/globals.dart';
-import 'package:project_to_do_list/components/ui/app_widgets.dart';
+import 'package:project_to_do_list/components/ui/edit_text_field.dart';
 import 'package:project_to_do_list/components/ui/priority_button.dart';
-import 'package:project_to_do_list/functions/global_functions.dart';
+import 'package:project_to_do_list/components/ui/select_task_type.dart';
+
+// TODO add tab switching and add save button
 
 class EditTaskScreen extends StatefulWidget {
   final Map taskData;
-  const EditTaskScreen({required this.taskData, super.key});
+  final String currentTab;
+  const EditTaskScreen({required this.taskData, required this.currentTab, super.key});
 
   @override
   State<EditTaskScreen> createState() => _EditTaskState();
@@ -43,46 +46,38 @@ class _EditTaskState extends State<EditTaskScreen> {
           backgroundColor: colorScheme.primary,
           title: Text("edit $taskTitle"),
         ),
-        body: Column(children: [
-          AppLayout.colorAdaptivText("Edit Title Of Task"),
-          Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 20),
-            child: TextField(
-              decoration: InputDecoration(
-                suffixIcon: IconButton(
-                  color: colorScheme.primary,
-                  icon: const Icon(Icons.undo),
-                  onPressed: () => setState(() {
-                    print(unchangedCopyOfCurrentTask);
-                    widget.taskData["title"] = titleController.text  = unchangedCopyOfCurrentTask["title"];
-                  }),
-                ),
-                enabledBorder: AppLayout.inactiveBorder(),
-                focusedBorder: AppLayout.activeBorder(),
-                errorBorder: AppLayout.inactiveBorder(),
-                focusedErrorBorder: AppLayout.activeBorder(),
-                hintText: "A title for your project",
-                hintStyle: TextStyle(color: colorScheme.text),
-              ),
-              controller: titleController,
-              style: TextStyle(color: colorScheme.text),
-              cursorColor: colorScheme.primary,
-              onChanged: (value) {
-                setState(() {
-                  widget.taskData["title"] = value;
-                });
-              },
+        body: Column(
+          children: [
+            TaskEditTextField(
+              editDescription: "Title",
+              originalText: unchangedCopyOfCurrentTask["title"],
+              textFieldCallback: (value) => setState(() {
+                widget.taskData["title"] = value;
+              }),
             ),
-          ),
-          SingleClickPriorityButton(
-            currentPriority: widget.taskData["priority"],
-            buttonCallback: (value) => setState(() {
-              widget.taskData["priority"] = value;
-            }),
-          )
-        ]),
+            TaskEditTextField(
+              editDescription: "Description",
+              originalText: unchangedCopyOfCurrentTask["description"],
+              textFieldCallback: (value) => setState(() {
+                widget.taskData["description"] = value;
+              }),
+            ),
+            SingleClickPriorityButton(
+              currentPriority: widget.taskData["priority"],
+              buttonCallback: (value) => setState(() {
+                widget.taskData["priority"] = value;
+              }),
+            ),
+            SelectTaskType(
+              currentTaskType: widget.taskData["taskType"],
+              taskTypeCallback: (value) => setState(() {
+                widget.taskData["taskType"] = value;
+              }),
+            )
+          ],
+        ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => null,
+          onPressed: () => print(widget.taskData),
           backgroundColor: Colors.grey,
           child: const Icon(Icons.save),
         ),

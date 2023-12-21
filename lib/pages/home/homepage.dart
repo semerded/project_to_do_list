@@ -43,6 +43,7 @@ class _APPState extends State<APP> {
       },
       child: MaterialApp(
         home: DefaultTabController(
+          initialIndex: defaultTab,
           animationDuration: const Duration(milliseconds: 300),
           length: 3,
           child: Scaffold(
@@ -94,6 +95,7 @@ class _APPState extends State<APP> {
                 ),
                 Expanded(
                   child: TabBarView(
+
                     children: [
                       PlaceToDoTasks(
                         currentTab: "toDo",
