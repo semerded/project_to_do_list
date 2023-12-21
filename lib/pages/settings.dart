@@ -65,6 +65,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
             ///
             settingsCard(
               title: settingsCardTitle("Show Programming Color"),
+              subTitle: AppLayout.colorAdaptivText("TODO"),
               leading: Switch(
                 value: showProgrammingColor,
                 activeColor: colorScheme.primary,
@@ -79,6 +80,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
             ///
             settingsCard(
               title: settingsCardTitle("Dark Mode"),
+              subTitle: AppLayout.colorAdaptivText("Enable dark mode"),
               leading: Switch(
                 value: darkMode,
                 activeColor: colorScheme.primary,
@@ -90,6 +92,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
             ),
             settingsCard(
                 title: settingsCardTitle("Only Search In Title"),
+                subTitle: AppLayout.colorAdaptivText("Whether the search tool searches in the descriptions or not"),
                 leading: Switch(
                   value: onlySearchInTitle,
                   activeColor: colorScheme.primary,
@@ -101,6 +104,7 @@ class _SettingsMenuState extends State<SettingsMenu> {
                 )),
             settingsCard(
                 title: settingsCardTitle("Search Tasks In Subtasks"),
+                subTitle: AppLayout.colorAdaptivText("Whether the search tool also searches in the subtasks titles"),
                 leading: Switch(
                   value: searchInSubTasks,
                   activeColor: colorScheme.primary,
@@ -112,12 +116,29 @@ class _SettingsMenuState extends State<SettingsMenu> {
                 )),
             settingsCard(
                 title: settingsCardTitle("Auto Move Task To In Progress"),
+                subTitle: AppLayout.colorAdaptivText("If enabled, a task with one subtask completed will be moved to In Progress automatically"),
                 leading: Switch(
                   value: false,
                   activeColor: colorScheme.primary,
                   onChanged: (value) {
                     setState(() {
                       // onlySearchInTitle = !onlySearchInTitle;
+                    });
+                  },
+                )),
+            settingsCard(
+                title: settingsCardTitle("Set 'In Progress' tab as default"),
+                subTitle: AppLayout.colorAdaptivText("If enabled, the 'In Progress' tab will be the default tab to show when opening the app. Otherwise it will be the 'To Do' tab"),
+                leading: Switch(
+                  value: defaultTab == 1 ? true : false,
+                  activeColor: colorScheme.primary,
+                  onChanged: (value) {
+                    setState(() {
+                      if (value) {
+                        defaultTab = 1;
+                      } else {
+                        defaultTab = 0;
+                      }
                     });
                   },
                 ))

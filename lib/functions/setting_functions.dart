@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/globals.dart';
-import 'package:project_to_do_list/components/ui/app_widgets.dart';
 
-Widget settingsCard({dynamic leading, dynamic title}) {
+Widget settingsCard({dynamic leading, dynamic title, dynamic subTitle}) {
   return Card(
     color: colorScheme.card,
     elevation: 2,
     child: ListTile(
       title: title,
+      subtitle: subTitle,
       leading: leading,
     ),
   );
 }
 
 Widget settingsCardTitle(String title) {
-  return AppLayout.colorAdaptivText(title);
+  return Text(
+    title,
+    style: TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 18,
+      color: colorScheme.primary,
+    ),
+  );
 }
