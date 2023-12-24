@@ -4,6 +4,7 @@ import 'package:project_to_do_list/components/globals.dart';
 import 'package:deepcopy/deepcopy.dart';
 import 'package:project_to_do_list/components/ui/app_widgets.dart';
 import 'package:project_to_do_list/components/ui/delete_task_dialog.dart';
+import 'package:project_to_do_list/components/ui/task_move_controller.dart';
 import 'package:project_to_do_list/functions/global_functions.dart';
 import 'package:project_to_do_list/components/ui/show_subtask_dialog.dart';
 import 'package:project_to_do_list/pages/edittask.dart';
@@ -96,6 +97,10 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                 } ()),
                 semanticsLabel: "task progress indicator",
               ),
+            ),
+            TaskMoveController(
+              currentTab: widget.currentTab,
+              onClicked: (value) => value,
             ),
             Center(
               child: Padding(
