@@ -19,7 +19,7 @@ class ShowTaskScreen extends StatefulWidget {
 }
 
 class _ShowTaskScreenState extends State<ShowTaskScreen> {
-  Map unchangedCopyOfCurrentTask = {}; //  not possible with deepcopy
+  Map unchangedCopyOfCurrentTask = {}; // a deepcopy will be saved in the init state
 
 
   bool isTaskChanged() {
@@ -80,33 +80,21 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
         ),
         body: ListView(
           children: [
-            SliderTheme(
-              data: SliderThemeData(
-                trackHeight: 30,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16, elevation: 5),
-                activeTrackColor: Colors.green,
-                inactiveTrackColor: Colors.grey[600],
-                thumbColor: colorScheme.primary,
-              ),
-              child: AbsorbPointer(
-                child: Slider(
-                  value: (() {
-                    if (widget.currentTab == "completed" && widget.toDoTaskPerIndex["subtasks"].isEmpty) {
-                      return 1.0;
-                    } else {
-                      return getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]);
-                    }
-                  }()),
-                  min: 0,
-                  max: (() {
-                    if (widget.toDoTaskPerIndex["subtasks"].isEmpty) {
-                      return 1.0;
-                    } else {
-                      return widget.toDoTaskPerIndex["subtasks"].length.toDouble();
-                    }
-                  }()),
-                  onChanged: (value) => value,
-                ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: LinearProgressIndicator(
+                backgroundColor: Colors.grey[600],
+                borderRadius: BorderRadius.circular(15),
+                minHeight: 30,
+                color: colorScheme.primary,
+                value: (() {
+                  if (widget.currentTab == "completed" && widget.toDoTaskPerIndex["subtasks"].isEmpty) {
+                    return 1.0;
+                  } else {
+                    return getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) / widget.toDoTaskPerIndex["subtasks"].length;
+                  }
+                } ()),
+                semanticsLabel: "task progress indicator",
               ),
             ),
             Center(
