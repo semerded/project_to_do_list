@@ -20,45 +20,47 @@ class _SelectTaskTypeState extends State<SelectTaskType> {
   void initState() {
     super.initState();
     taskType = widget.currentTaskType;
+    if (!taskTypeCatergories.contains(taskType)) {
+      taskType = "Other";
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-              decoration: BoxDecoration(
-                color: colorScheme.card,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  width: 5,
-                  color: taskTypeCatergoriesColors[taskType][0],
+      decoration: BoxDecoration(
+        color: colorScheme.card,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          width: 5,
+          color: taskTypeCatergoriesColors[taskType][0],
+        ),
+      ),
+      child: DropdownButton(
+          dropdownColor: colorScheme.card,
+          isExpanded: true,
+          hint: AppLayout.colorAdaptivText("selected task type: $taskType"),
+          borderRadius: BorderRadius.circular(10),
+          icon: const Icon(Icons.keyboard_arrow_down),
+          padding: const EdgeInsets.all(10),
+          items: taskTypeCatergories.map(
+            (String value) {
+              return DropdownMenuItem(
+                value: value,
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    color: taskTypeCatergoriesColors[value][0],
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              child: DropdownButton(
-                dropdownColor: colorScheme.card,
-                isExpanded: true,
-                hint: AppLayout.colorAdaptivText("selected task type: $taskType"),
-                borderRadius: BorderRadius.circular(10),
-                icon: const Icon(Icons.keyboard_arrow_down),
-                padding: const EdgeInsets.all(10),
-                items: taskTypeCatergories.map(
-                  (String value) {
-                    return DropdownMenuItem(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          color: taskTypeCatergoriesColors[value][0],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    );
-                  },
-                ).toList(),
-                onChanged: (value) => setState(() {
-                  taskType = value!;
-                  widget.taskTypeCallback(value);
-                })
-                  
-              ),
-            );
+              );
+            },
+          ).toList(),
+          onChanged: (value) => setState(() {
+                taskType = value!;
+                widget.taskTypeCallback(value);
+              })),
+    );
   }
 }
