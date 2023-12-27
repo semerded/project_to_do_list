@@ -5,6 +5,7 @@ import 'package:project_to_do_list/pages/home/filter/priority_filter.dart';
 import 'package:project_to_do_list/pages/home/filter/search_filter.dart';
 import 'package:project_to_do_list/pages/home/filter/tasktype_filter.dart';
 import 'package:project_to_do_list/pages/addtask.dart';
+import 'package:project_to_do_list/pages/home/filter/tasktype_x_button.dart';
 import 'package:project_to_do_list/pages/settings.dart';
 import 'place_todo_task.dart';
 
@@ -150,7 +151,9 @@ class _APPState extends State<APP> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 FloatingActionButton(
-                  onPressed: null,
+                  onPressed: () => setState(() {
+                    filterTaskByTaskType = hideShowAllTaskTypes(filterTaskByTaskType);
+                  }),
                   backgroundColor: colorScheme.card,
                   shape: CircleBorder(
                     side: BorderSide(
@@ -159,7 +162,15 @@ class _APPState extends State<APP> {
                     ),
                   ),
                   mini: true,
-                  child: Icon(Icons.cancel_outlined, color: colorScheme.text),
+                  child: checkIfAllTaskTypesAreEnabled(filterTaskByTaskType)
+                      ? Icon(
+                          Icons.cancel_outlined,
+                          color: colorScheme.text,
+                        )
+                      : Icon(
+                          Icons.check_box_outlined,
+                          color: colorScheme.text,
+                        ),
                 ),
                 Flexible(
                   child: SizedBox(
