@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/globals.dart';
 import 'package:project_to_do_list/components/ui/app_widgets.dart';
 import 'package:project_to_do_list/functions/global_functions.dart';
-import 'package:project_to_do_list/pages/home/filter/filter_tasks.dart';
+import 'package:project_to_do_list/pages/home/filter/task_filter.dart';
 import 'package:project_to_do_list/pages/home/taskview_return_handler.dart';
 import 'package:project_to_do_list/pages/viewtask.dart';
 import 'package:percent_indicator/percent_indicator.dart';
