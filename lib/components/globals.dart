@@ -22,19 +22,7 @@ Map taskTypeCatergoriesColors = {
   taskTypeCatergories[9]: [Colors.green, false],
   taskTypeCatergories[10]: [Colors.black, false]
 };
-Map taskTypesActive = {
-  taskTypeCatergories[0]: true,
-  taskTypeCatergories[1]: true,
-  taskTypeCatergories[2]: true,
-  taskTypeCatergories[3]: true,
-  taskTypeCatergories[4]: true,
-  taskTypeCatergories[5]: true,
-  taskTypeCatergories[6]: true,
-  taskTypeCatergories[7]: true,
-  taskTypeCatergories[8]: true,
-  taskTypeCatergories[9]: true,
-  taskTypeCatergories[10]: true,
-};
+
 
 Map taskPriorityColors = {Priority.none.index: Colors.grey, Priority.low.index: Colors.green, Priority.medium.index: Colors.yellow[600], Priority.high.index: Colors.red};
 

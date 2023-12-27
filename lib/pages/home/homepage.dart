@@ -18,9 +18,13 @@ class APP extends StatefulWidget {
 }
 
 class _APPState extends State<APP> {
+  Map filterTaskByTaskType = {};
   @override
   void initState() {
     super.initState();
+    for (String taskType in taskTypeCatergories) {
+      filterTaskByTaskType[taskType] = true;
+    }
     readLocalJSONtoDoTaskSaveFile().then((Map value) {
       setState(() {
         toDoTasks = value;
@@ -29,6 +33,7 @@ class _APPState extends State<APP> {
   }
 
   List filterTaskByPriority = [true, true, true, true];
+
   String filteredTasksBySearch = "";
 
   @override
@@ -95,22 +100,24 @@ class _APPState extends State<APP> {
                 ),
                 Expanded(
                   child: TabBarView(
-
                     children: [
                       PlaceToDoTasks(
                         currentTab: "toDo",
                         filterTaskTypeBySearch: filteredTasksBySearch,
                         filterTaskByPriority: filterTaskByPriority,
+                        filterTaskByTaskType: filterTaskByTaskType,
                       ),
                       PlaceToDoTasks(
                         currentTab: "inProgress",
                         filterTaskTypeBySearch: filteredTasksBySearch,
                         filterTaskByPriority: filterTaskByPriority,
+                        filterTaskByTaskType: filterTaskByTaskType,
                       ),
                       PlaceToDoTasks(
                         currentTab: "completed",
                         filterTaskTypeBySearch: filteredTasksBySearch,
                         filterTaskByPriority: filterTaskByPriority,
+                        filterTaskByTaskType: filterTaskByTaskType,
                       ),
                     ],
                   ),
@@ -154,8 +161,14 @@ class _APPState extends State<APP> {
                   mini: true,
                   child: Icon(Icons.cancel_outlined, color: colorScheme.text),
                 ),
-                const Flexible(
-                  child: SizedBox(height: 30, child: FilterTaskTypeButton()),
+                Flexible(
+                  child: SizedBox(
+                    height: 30,
+                    child: FilterTaskTypeButton(
+                      filterTaskByTasktype: filterTaskByTaskType,
+                      onChanged: (value) => setState(() {}),
+                    ),
+                  ),
                 )
               ],
             ),

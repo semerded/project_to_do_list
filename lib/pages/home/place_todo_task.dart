@@ -11,7 +11,8 @@ class PlaceToDoTasks extends StatefulWidget {
   final String currentTab;
   final String filterTaskTypeBySearch;
   final List filterTaskByPriority;
-  const PlaceToDoTasks({required this.currentTab, required this.filterTaskTypeBySearch, required this.filterTaskByPriority, super.key});
+  final Map filterTaskByTaskType;
+  const PlaceToDoTasks({required this.currentTab, required this.filterTaskTypeBySearch, required this.filterTaskByPriority, required this.filterTaskByTaskType, super.key});
 
   @override
   State<PlaceToDoTasks> createState() => _PlaceToDoTasksState();
@@ -55,7 +56,7 @@ class _PlaceToDoTasksState extends State<PlaceToDoTasks> {
           itemBuilder: (context, index) {
             Map toDoTaskPerIndex = toDoTasksPerCategoryOfCompletion[index];
             String taskType = checkIfTaskTypeIsValid(toDoTaskPerIndex["taskType"].toString());
-            if (checkIfTaskIsNotFilteredOut(toDoTaskPerIndex, widget.filterTaskTypeBySearch, widget.filterTaskByPriority)) {
+            if (checkIfTaskIsNotFilteredOut(toDoTaskPerIndex, widget.filterTaskTypeBySearch, widget.filterTaskByPriority, widget.filterTaskByTaskType)) {
               return Card(
                 color: colorScheme.card,
                 elevation: 2,

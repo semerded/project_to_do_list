@@ -1,29 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/globals.dart';
 
-bool checkIfTaskIsNotFilteredOut(Map taskData, filteredTasksBySearch, filterTaskByPriority) {
+bool checkIfTaskIsNotFilteredOut(Map taskData, filteredTasksBySearch, filterTasksByPriority, filteredTasksByTaskType) {
   bool taskIsNotFilteredOut = true;
-    if (!taskData["title"].contains(filteredTasksBySearch)) {
-      taskIsNotFilteredOut = false;
-    }
-    if (!onlySearchInTitle && !taskData["description"].contains(filteredTasksBySearch)) {
-      taskIsNotFilteredOut = false;
-    }
-    if (searchInSubTasks) {
-      for (var subTask in taskData["subtasks"]) {
-        if (!subTask["title"].contains(filteredTasksBySearch)) {
-          taskIsNotFilteredOut = false;
-        }
+
+  // check if task is filtered by search bar
+  if (!taskData["title"].contains(filteredTasksBySearch)) {
+    taskIsNotFilteredOut = false;
+  }
+  if (!onlySearchInTitle && !taskData["description"].contains(filteredTasksBySearch)) {
+    taskIsNotFilteredOut = false;
+  }
+  if (searchInSubTasks) {
+    for (var subTask in taskData["subtasks"]) {
+      if (!subTask["title"].contains(filteredTasksBySearch)) {
+        taskIsNotFilteredOut = false;
       }
     }
-    if (!filterTaskByPriority[taskData["priority"]]) {
-      taskIsNotFilteredOut = false;
-    }
-    return taskIsNotFilteredOut;
   }
 
+  // check if task is filtered by priority
+  if (!filterTasksByPriority[taskData["priority"]]) {
+    taskIsNotFilteredOut = false;
+  }
+
+  // check if task is filtered by task type
+  if (taskTypeCatergories.contains(taskData["taskType"])) {
+    if (!filteredTasksByTaskType[taskData["taskType"]]) {
+        taskIsNotFilteredOut = false;
+    }
+  } else {
+    if (!filteredTasksByTaskType["Other"]) {
+      taskIsNotFilteredOut = false;
+    }
+  
+  }
+ 
+  return taskIsNotFilteredOut;
+}
+
+typedef TaskTypeFilterCallback = void Function(Map value);
+
 class FilterTaskTypeButton extends StatefulWidget {
-  const FilterTaskTypeButton({super.key});
+  final TaskTypeFilterCallback onChanged;
+  final Map filterTaskByTasktype;
+  const FilterTaskTypeButton({required this.filterTaskByTasktype, required this.onChanged, super.key});
 
   @override
   State<FilterTaskTypeButton> createState() => _FilterTaskTypeButtonState();
@@ -32,7 +53,6 @@ class FilterTaskTypeButton extends StatefulWidget {
 class _FilterTaskTypeButtonState extends State<FilterTaskTypeButton> {
   @override
   Widget build(BuildContext context) {
-   
     return ListView.builder(
       shrinkWrap: true,
       scrollDirection: Axis.horizontal,
@@ -40,19 +60,20 @@ class _FilterTaskTypeButtonState extends State<FilterTaskTypeButton> {
       itemBuilder: (context, index) {
         String taskTypeElement = taskTypeCatergories[index];
         return ElevatedButton(
-          onPressed: () => setState(() {
-            taskTypesActive[taskTypeElement] = !taskTypesActive[taskTypeElement];
-          }),
+          onPressed: () {
+            widget.filterTaskByTasktype[taskTypeElement] = !widget.filterTaskByTasktype[taskTypeElement];
+            widget.onChanged(widget.filterTaskByTasktype);
+          },
           style: ElevatedButton.styleFrom(
               backgroundColor: taskTypeCatergoriesColors[taskTypeElement][0],
-              shape: taskTypesActive[taskTypeElement]
+              shape: widget.filterTaskByTasktype[taskTypeElement]
                   ? RoundedRectangleBorder(
                       side: BorderSide(width: 5, color: colorScheme.text),
                       borderRadius: const BorderRadius.all(
                         Radius.circular(5),
                       ),
                     )
-                  : null),
+                  : const RoundedRectangleBorder()),
           child: Text(
             taskTypeElement,
             style: TextStyle(color: taskTypeCatergoriesColors[taskTypeElement][1] ? Colors.black : Colors.white),
@@ -61,6 +82,4 @@ class _FilterTaskTypeButtonState extends State<FilterTaskTypeButton> {
       },
     );
   }
-  }
-
-  
+}

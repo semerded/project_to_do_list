@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:project_to_do_list/components/globals.dart';
 import 'package:project_to_do_list/components/ui/app_widgets.dart';
 
-typedef MyCallback = void Function(String value);
+typedef OnChangedCallback = void Function(String value);
 
 class FilterBySearch extends StatefulWidget {
-  final MyCallback onChanged;
+  final OnChangedCallback onChanged;
 
   const FilterBySearch({required this.onChanged, super.key});
 
