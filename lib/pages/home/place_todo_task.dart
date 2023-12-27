@@ -3,6 +3,7 @@ import 'package:project_to_do_list/components/globals.dart';
 import 'package:project_to_do_list/components/ui/app_widgets.dart';
 import 'package:project_to_do_list/functions/global_functions.dart';
 import 'package:project_to_do_list/pages/home/filter/filter_tasks.dart';
+import 'package:project_to_do_list/pages/home/taskview_return_handler.dart';
 import 'package:project_to_do_list/pages/viewtask.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -122,22 +123,14 @@ class _PlaceToDoTasksState extends State<PlaceToDoTasks> {
                         index: index,
                       ),
                     ),
-                  ).then((value) {
-                    if (value != null) {
-                      setState(() {
-                        if (value[0]) {
-                          toDoTasks["completed"].add(value[1]);
-                          toDoTasks[widget.currentTab].removeAt(index);
-                        } else {
-                          toDoTasks[widget.currentTab][index] = value[1];
-                        }
-                      });
-                    } else {
-                      setState(() {
-                        toDoTasks[widget.currentTab].removeAt(index);
-                      });
-                    }
-                  }),
+                  ).then(
+                    (value) => setState(
+                      () {
+                        TaskViewReturnHandler taskHandler = TaskViewReturnHandler(value, toDoTasks, widget.currentTab, index);
+                        taskHandler.returnUpdatedToDoTaskList();
+                      },
+                    ),
+                  ),
                 ),
               );
             } else {

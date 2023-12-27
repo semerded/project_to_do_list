@@ -22,7 +22,6 @@ class ShowTaskScreen extends StatefulWidget {
 class _ShowTaskScreenState extends State<ShowTaskScreen> {
   Map unchangedCopyOfCurrentTask = {}; // a deepcopy will be saved in the init state
 
-
   bool isTaskChanged() {
     if (const DeepCollectionEquality().equals(unchangedCopyOfCurrentTask, widget.toDoTaskPerIndex)) {
       return false; // false because task has not changed
@@ -34,7 +33,6 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
   void initState() {
     super.initState();
     unchangedCopyOfCurrentTask = widget.toDoTaskPerIndex.deepcopy();
-
   }
 
   @override
@@ -57,7 +55,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop([false, unchangedCopyOfCurrentTask]),
+            onPressed: () => Navigator.of(context).pop(["discard", unchangedCopyOfCurrentTask]),
           ),
           actions: [
             IconButton(
@@ -72,7 +70,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
             IconButton(
               onPressed: () => deleteTaskDialog(context).then((value) {
                 if (value != null && value) {
-                  Navigator.of(context).pop(null);
+                  Navigator.of(context).pop(["delete", unchangedCopyOfCurrentTask]);
                 }
               }),
               icon: const Icon(Icons.delete_forever),
@@ -94,7 +92,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                   } else {
                     return getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) / widget.toDoTaskPerIndex["subtasks"].length;
                   }
-                } ()),
+                }()),
                 semanticsLabel: "task progress indicator",
               ),
             ),
@@ -129,6 +127,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                       color: colorScheme.text,
                     ),
                     title: AppLayout.colorAdaptivText("add subtask"),
+                    // trailing: PopupMenuButton(icon: const Icon(Icons.more_vert)),
                     onTap: () {
                       subTaskDialog(context).then((value) {
                         if (value != null) {
@@ -140,7 +139,8 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                     },
                   ),
                 ),
-                ListView.builder( // filter subtasks for their priority
+                ListView.builder(
+                  // filter subtasks for their priority
                   shrinkWrap: true,
                   itemCount: widget.toDoTaskPerIndex["subtasks"].length,
                   itemBuilder: (context, subIndex) {
@@ -154,16 +154,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                           subTaskCompleted = !subTaskCompleted;
                           widget.toDoTaskPerIndex["subtasks"][subIndex]["completed"] = subTaskCompleted;
                         }),
-                        leading: ElevatedButton(
-                          onPressed: () => Container(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: taskPriorityColors[subTask["priority"]],
-                            shape:const  CircleBorder(
-                              side: BorderSide()
-                            )
-                          ),
-                          
-                          child: null),
+                        leading: ElevatedButton(onPressed: () => Container(), style: ElevatedButton.styleFrom(backgroundColor: taskPriorityColors[subTask["priority"]], shape: const CircleBorder(side: BorderSide())), child: null),
                         title: AppLayout.colorAdaptivText(subTask["title"]),
                         subtitle: AppLayout.colorAdaptivText(subTask["description"]),
                         shape: subTaskCompleted ? const RoundedRectangleBorder(side: BorderSide(width: 2, color: Colors.green), borderRadius: BorderRadius.all(Radius.circular(5))) : null,
@@ -189,7 +180,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).pop([false, unchangedCopyOfCurrentTask]);
+                  Navigator.of(context).pop(["discard", unchangedCopyOfCurrentTask]);
                 },
                 icon: const Icon(Icons.arrow_back),
                 label: Text(isTaskChanged() ? "Discard Changes" : "Go Back"),
@@ -199,17 +190,27 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
 
             // update changes
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => Navigator.of(context).pop([true, widget.toDoTaskPerIndex]),
-                icon: const Icon(Icons.check),
-                label: const Text("Complete task"),
-                style: ElevatedButton.styleFrom(backgroundColor: getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length ? Colors.green : Colors.grey),
-              ),
-            )
+                child: (() {
+              if (widget.currentTab == "completed") {
+                return ElevatedButton.icon(
+                  onPressed: () => Navigator.of(context).pop(["archive", widget.toDoTaskPerIndex]),
+                  icon: const Icon(Icons.archive),
+                  label: const Text("Archive task"),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                );
+              } else {
+                return ElevatedButton.icon(
+                  onPressed: () => Navigator.of(context).pop(["complete", widget.toDoTaskPerIndex]),
+                  icon: const Icon(Icons.check),
+                  label: const Text("Complete task"),
+                  style: ElevatedButton.styleFrom(backgroundColor: getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length ? Colors.green : Colors.grey),
+                );
+              }
+            }()))
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.of(context).pop([false, widget.toDoTaskPerIndex]),
+          onPressed: () => Navigator.of(context).pop(["save", widget.toDoTaskPerIndex]),
           backgroundColor: isTaskChanged() ? Colors.green : Colors.grey,
           child: const Icon(Icons.save),
         ),

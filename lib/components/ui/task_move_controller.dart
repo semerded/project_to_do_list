@@ -53,7 +53,7 @@ class _MoveToToDo extends StatelessWidget {
     return ElevatedButton.icon(
       onPressed: () => onClicked(0),
       icon: icon,
-      label: const Text("Move To 'To-Do')"),
+      label: const Text("Move To 'To-Do'"),
     );
   }
 }
