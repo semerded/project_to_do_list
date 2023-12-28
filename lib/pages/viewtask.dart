@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:project_to_do_list/components/enums.dart';
 import 'package:project_to_do_list/components/globals.dart';
 import 'package:deepcopy/deepcopy.dart';
 import 'package:project_to_do_list/components/ui/app_widgets.dart';
@@ -55,7 +56,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(["discard", unchangedCopyOfCurrentTask]),
+            onPressed: () => Navigator.of(context).pop([ReturnCommand.discard, unchangedCopyOfCurrentTask]),
           ),
           actions: [
             IconButton(
@@ -70,7 +71,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
             IconButton(
               onPressed: () => deleteTaskDialog(context).then((value) {
                 if (value != null && value) {
-                  Navigator.of(context).pop(["delete", unchangedCopyOfCurrentTask]);
+                  Navigator.of(context).pop([ReturnCommand.delete, unchangedCopyOfCurrentTask]);
                 }
               }),
               icon: const Icon(Icons.delete_forever),
@@ -98,7 +99,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
             ),
             TaskMoveController(
               currentTab: widget.currentTab,
-              onClicked: (value) => value,
+              onClicked: (value) => Navigator.of(context).pop([value, widget.toDoTaskPerIndex]),
             ),
             Center(
               child: Padding(
@@ -180,7 +181,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).pop(["discard", unchangedCopyOfCurrentTask]);
+                  Navigator.of(context).pop([ReturnCommand.discard, unchangedCopyOfCurrentTask]);
                 },
                 icon: const Icon(Icons.arrow_back),
                 label: Text(isTaskChanged() ? "Discard Changes" : "Go Back"),
@@ -193,14 +194,18 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
                 child: (() {
               if (widget.currentTab == "completed") {
                 return ElevatedButton.icon(
-                  onPressed: () => Navigator.of(context).pop(["archive", widget.toDoTaskPerIndex]),
+                  onPressed: () => Navigator.of(context).pop([ReturnCommand.archive, widget.toDoTaskPerIndex]),
                   icon: const Icon(Icons.archive),
                   label: const Text("Archive task"),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
                 );
               } else {
                 return ElevatedButton.icon(
-                  onPressed: () => Navigator.of(context).pop(["complete", widget.toDoTaskPerIndex]),
+                  onPressed: () {
+                    if (getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length) {
+                      Navigator.of(context).pop([ReturnCommand.moveToComplete, widget.toDoTaskPerIndex]);
+                    }
+                  },
                   icon: const Icon(Icons.check),
                   label: const Text("Complete task"),
                   style: ElevatedButton.styleFrom(backgroundColor: getTaskCompletion(widget.toDoTaskPerIndex["subtasks"]) == widget.toDoTaskPerIndex["subtasks"].length ? Colors.green : Colors.grey),
@@ -210,7 +215,7 @@ class _ShowTaskScreenState extends State<ShowTaskScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.of(context).pop(["save", widget.toDoTaskPerIndex]),
+          onPressed: () => Navigator.of(context).pop([ReturnCommand.save, widget.toDoTaskPerIndex]),
           backgroundColor: isTaskChanged() ? Colors.green : Colors.grey,
           child: const Icon(Icons.save),
         ),
